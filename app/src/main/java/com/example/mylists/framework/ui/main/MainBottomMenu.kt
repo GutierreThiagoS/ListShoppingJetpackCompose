@@ -38,39 +38,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BottomMenu(contentPadding: PaddingValues) {
-/*
-    val sizeListState by mainViewModel.sizeListState.collectAsState()
-
-    var isLoading by remember { mutableStateOf(true) }
-
-    LaunchedEffect(mainViewModel) {
-        mainViewModel.getSizerLists()
-    }
-
-    if (isLoading) {
-        ProgressSpinner()
-    }
-    */
     ListBottomMenuNavigation(contentPadding)
-
-    /*when (sizeListState) {
-        is BottomMenuState.Loading -> {
-            isLoading = true
-        }
-        is BottomMenuState.Success -> {
-            isLoading = false
-            val products = (sizeListState as BottomMenuState.Success).products
-            val shoppingCart = (sizeListState as BottomMenuState.Success).shoppingCart
-            Log.e("Error", "$products $shoppingCart ")
-            ListBottomMenuNavigation(contentPadding)
-        }
-        is BottomMenuState.Error -> {
-            isLoading = false
-            val errorMessage = (sizeListState as BottomMenuState.Error).message
-            Log.e("Error", "$errorMessage ")
-            // Tratar o erro de alguma forma
-        }
-    }*/
 }
 
 @Composable
@@ -83,7 +51,6 @@ fun ListBottomMenuNavigation(
     val navigationState by mainViewModel.navigationState.collectAsState()
 
     val navController = rememberNavController()
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -137,13 +104,15 @@ fun ListBottomMenuNavigation(
                 if (navigationState.title == NavigationScreen.SHOPPING.label || navigationState.title == NavigationScreen.PRODUCTS.label) {
                     FloatingButton {
                         mainViewModel.setNavigation(NavigationScreen.ADD.label)
-//                        navController.navigate(NavigationScreen.ADD.label)
+                        navController.navigate(NavigationScreen.ADD.label)
                     }
                 }
             }
         ) {
             Column(modifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
-                NavHostApp(navController)
+                NavHostApp(navController) { destination ->
+                    navController.navigate(destination)
+                }
             }
         }
     }
@@ -164,7 +133,8 @@ fun FloatingButton(onClick: () -> Unit) {
 
 @Composable
 fun NavHostApp(
-    navController: NavHostController
+    navController: NavHostController,
+    returnDest: (destination: String) -> Unit
 ) {
     NavHost(navController, startDestination = NavigationScreen.SHOPPING.label) {
         composable(NavigationScreen.SHOPPING.label) {
@@ -174,7 +144,7 @@ fun NavHostApp(
             ProductsFrag()
         }
         composable(NavigationScreen.ADD.label) {
-            AddProductFrag()
+            AddProductFrag(returnDest = returnDest)
         }
         composable(NavigationScreen.SETTINGS.label) {
             FragmentMessage()

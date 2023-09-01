@@ -1,5 +1,7 @@
 package com.example.mylists.framework.presentation.products
 
+import android.util.Log
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -30,6 +32,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,6 +43,7 @@ import com.example.mylists.R
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.framework.ui.theme.DarkGreen
 import org.koin.androidx.compose.koinViewModel
+import kotlin.math.absoluteValue
 
 @Composable
 fun ProductListItem(product: ProductOnItemShopping) {
@@ -57,7 +62,9 @@ fun ProductListItem(product: ProductOnItemShopping) {
 }
 
 @Composable
-fun FloatingActionButtonItem(icon: ImageVector, size: Dp = 40.dp, onClick: () -> Unit) {
+fun FloatingActionButtonItem(icon: ImageVector, size: Dp = 40.dp, onClick: (isLong: Boolean) -> Unit) {
+    var isLongClickActive by remember { mutableStateOf(false) }
+
     val shape = if (icon == Icons.Filled.Add) {
         MaterialTheme.shapes.small.copy(
             topEnd = CornerSize(0.dp),
@@ -70,9 +77,16 @@ fun FloatingActionButtonItem(icon: ImageVector, size: Dp = 40.dp, onClick: () ->
     FloatingActionButton(
         modifier = Modifier
             .height(size)
-            .width(size),
+            .width(size)
+            .pointerInput(Unit) {
+                Modifier.detectLongClick { longClickOccurred ->
+                    isLongClickActive = longClickOccurred
+                }
+            },
         shape = shape,
-        onClick = onClick,
+        onClick = {
+            onClick(isLongClickActive)
+        }
     ) {
         Icon(icon, "Localized description")
     }
@@ -171,6 +185,43 @@ fun ItemProduct(
                 product.quantity--
                 text = product.quantity.toString()
                 viewModel.insertProductInShoppingList(product = product)
+            } /*else if (it) {
+                Log.e("Teste", "ClickLong $it")
+            }*/
+
+            Log.e("Teste", "ClickLong $it")
+
+        }
+    }
+}
+
+fun Modifier.detectLongClick(callback: (Boolean) -> Unit): Modifier {
+    return pointerInput(Unit) {
+        var longClickStarted = false
+
+        detectTransformGestures { _, _, pan, _ ->
+            Log.e("pan", "pan ${pan.absoluteValue}")
+            if (!longClickStarted) {
+                if (pan.absoluteValue >= 20.dp.toPx()) {
+                    longClickStarted = true
+                    callback(true)
+                }
+            }
+        }
+
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent()
+
+                if (event.changes.all { it.positionChange().x.absoluteValue >= 20.dp.toPx() }) {
+                    longClickStarted = false
+                    callback(false)
+                    break
+                } else {
+                    longClickStarted = false
+                    callback(false)
+                    break
+                }
             }
         }
     }

@@ -53,7 +53,7 @@ import org.koin.androidx.compose.koinViewModel
 val itemInputs = mutableListOf<ItemFieldAddProd>()
 
 @Composable
-fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainViewModel: MainViewModel = koinViewModel()) {
+fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainViewModel: MainViewModel = koinViewModel(), returnDest: (destination: String) -> Unit) {
 
     var showDialog by remember { mutableStateOf(
         DialogArgs("Error", "Existe Campo vazio!")
@@ -171,22 +171,20 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
                                     if (it) {
                                         if (checkedState) {
                                             mainViewModel.setNavigation(title = NavigationScreen.SHOPPING.label)
-//                                            navigationNav?.navigate(NavigationScreen.SHOPPING.label)
+                                            returnDest(NavigationScreen.SHOPPING.label)
                                         }
                                         else {
                                             mainViewModel.setNavigation(title = NavigationScreen.PRODUCTS.label)
-//                                            navigationNav?.navigate(NavigationScreen.PRODUCTS.label)
+                                            returnDest(NavigationScreen.PRODUCTS.label)
                                         }
-                                    } else showDialog = DialogArgs("Error", "Produto não salvo!",true)
+                                    } else {
+                                        showDialog = DialogArgs("Error", "Produto não salvo!",true)
+                                    }
                                 }
                             }
                             isLoading = false
                         }
-                    } else {
-//                        Log.e("Erro", "$navigationNav")
-//                        navigationNav?.navigate(NavigationScreen.PRODUCTS.label)
-//                        showDialog = DialogArgs("Error", "Existe Campo vazio!",true)
-                    }
+                    } else showDialog = DialogArgs("Error", "Existe Campo vazio!",true)
                 },
             ) {
                 Text(text = "Adicionar")
@@ -278,5 +276,5 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun AddProductFragPreview() {
-    AddProductFrag()
+    AddProductFrag {}
 }

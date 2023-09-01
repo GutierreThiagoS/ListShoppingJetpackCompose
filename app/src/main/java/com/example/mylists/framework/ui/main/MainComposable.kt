@@ -76,25 +76,19 @@ fun ToolbarAppBar(viewModel: MainViewModel = koinViewModel()) {
                         )
                     )
                 },
-                /*navigationIcon = {
-                    IconButton(onClick = {  doSomething()  }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Localized description"
-                        )
-                    }
-                },*/
                 actions = {
                     if (navigationState.title == NavigationScreen.SHOPPING.label) {
                         Row {
                             Icon(
-                                modifier = Modifier.padding(end = 5.dp)
+                                modifier = Modifier
+                                    .padding(end = 5.dp)
                                     .align(Alignment.CenterVertically),
                                 imageVector = Icons.Filled.Calculate,
                                 contentDescription = "Localized description"
                             )
                             Text(
-                                modifier = Modifier.padding(end = 5.dp)
+                                modifier = Modifier
+                                    .padding(end = 5.dp)
                                     .align(Alignment.CenterVertically),
                                 text = String.format("R$ %.2f", total ?: 0f),
                                 style = TextStyle(
