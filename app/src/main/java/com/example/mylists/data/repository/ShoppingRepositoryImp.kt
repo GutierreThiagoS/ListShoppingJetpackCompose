@@ -10,7 +10,6 @@ import com.example.mylists.domain.model.ItemShopping
 import com.example.mylists.domain.model.Product
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.domain.repository.ShoppingRepository
-import com.example.mylists.sealed_class.BottomMenuState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlin.Exception
@@ -58,24 +57,6 @@ class ShoppingRepositoryImp(
         }
     }
 
-    override suspend fun sizeListsProdAndShopping(): BottomMenuState {
-        return try {
-           /* if (productDao.listAll().isEmpty()) {
-                productDao.insertAll(*mockProducts().toTypedArray())
-            }
-            if (categoryDao.getList().isEmpty()) {
-                categoryDao.insertAll(*categories.toTypedArray())
-            }*/
-            BottomMenuState.Success(
-                shoppingCart = itemShoppingDao.getListProductOnItemShopping(),
-                products = productDao.listAllProductOnItemShopping()
-            )
-        } catch (e: Exception) {
-            Log.e("Error", "sizeListsProdAndShopping $e")
-            BottomMenuState.Error("Erro ")
-        }
-    }
-
     override fun navigationBadgeCount(title: String): Flow<Int?> {
         return when(title) {
             NavigationScreen.SHOPPING.label -> itemShoppingDao.countProductOnItemShopping()
@@ -84,9 +65,16 @@ class ShoppingRepositoryImp(
         }
     }
 
+    override fun checkProduct() {
+        if (productDao.getAll().isEmpty()) {
+            productDao.insertAll(*products.toTypedArray())
+        }
+        if (categoryDao.getList().isEmpty()) {
+            categoryDao.insertAll(*categories.toTypedArray())
+        }
+    }
 
-    fun mockProducts(): List<Product> {
-        return listOf(
+    private val products = listOf(
             Product(
                 description = "Arroz 1kg",
                 imgProduct = "url_arroz.png",
@@ -320,9 +308,8 @@ class ShoppingRepositoryImp(
                 price = 0.89f
             ),
         )
-    }
 
-    val categories = listOf(
+    private val categories = listOf(
         Category(idCategory = 1, nameCategory = "Alimento"),
         Category(idCategory = 2, nameCategory = "Higiene"),
         Category(idCategory = 3, nameCategory = "Padaria"),

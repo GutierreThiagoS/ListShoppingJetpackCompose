@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -48,6 +49,10 @@ fun ListBottomMenuNavigation(
     mainViewModel: MainViewModel = koinViewModel()
 ) {
 
+    LaunchedEffect(mainViewModel){
+        mainViewModel.checkProduct()
+    }
+
     val navigationState by mainViewModel.navigationState.collectAsState()
 
     val navController = rememberNavController()
@@ -76,7 +81,7 @@ fun ListBottomMenuNavigation(
                                 BadgedBox(
                                     badge = {
                                         val navigationBadgeCount by mainViewModel.navigationBadgeCount(item.title).collectAsState(null)
-                                        item.badgeCount = navigationBadgeCount
+                                        item.badgeCount = navigationBadgeCount?.takeIf { it > 0 }
                                         if(item.badgeCount != null) {
                                             Badge {
                                                 Text(text = item.badgeCount.toString())

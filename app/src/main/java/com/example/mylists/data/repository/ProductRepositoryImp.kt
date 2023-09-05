@@ -36,6 +36,10 @@ class ProductRepositoryImp(
         return categoryDao.categoryList()
     }
 
+    override fun getAllBrand(): Flow<List<String>> {
+        return productDao.getAllBrand()
+    }
+
     override fun insertCategory(category: Category): Long{
         return categoryDao.insert(category)
     }

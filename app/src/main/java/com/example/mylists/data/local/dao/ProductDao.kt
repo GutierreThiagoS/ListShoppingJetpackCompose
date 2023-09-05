@@ -14,6 +14,12 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(vararg product: Product)
 
+    @Query("SELECT * FROM Product")
+    fun getAll(): List<Product>
+
+    @Query("SELECT DISTINCT(brandProduct) FROM Product ORDER BY brandProduct ASC")
+    fun getAllBrand(): Flow<List<String>>
+
     @Update
     fun update(product: Product): Int
 

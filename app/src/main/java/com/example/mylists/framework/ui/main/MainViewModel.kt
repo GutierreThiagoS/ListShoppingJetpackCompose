@@ -10,13 +10,16 @@ import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.mylists.NavigationScreen
 import com.example.mylists.domain.model.BottomNavigationItem
 import com.example.mylists.domain.model.NavigationSelected
 import com.example.mylists.domain.repository.ShoppingRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val shoppingRepository: ShoppingRepository
@@ -57,6 +60,12 @@ class MainViewModel(
     fun setNavigation(title: String, index: Int? = null) {
         _navigationState.value  =
             NavigationSelected(title, index ?: items.indexOf(items.find { it.title == title }))
+    }
+
+    fun checkProduct() {
+        viewModelScope.launch(Dispatchers.IO) {
+            shoppingRepository.checkProduct()
+        }
     }
 
     fun navigationBadgeCount(title: String) = shoppingRepository.navigationBadgeCount(title)

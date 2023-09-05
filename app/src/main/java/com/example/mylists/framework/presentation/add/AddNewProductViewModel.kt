@@ -16,6 +16,8 @@ class AddNewProductViewModel(
 
     val categoryList: Flow<List<Category>> = repository.consultCategoryList()
 
+    val brandList: Flow<List<String>> = repository.getAllBrand()
+
     fun insertProduct(product: Product, quantity: String = "", returnInsert: (status: Boolean) -> Unit){
         viewModelScope.launch(Dispatchers.IO +  CoroutineExceptionHandler { _, _ -> }) {
             val status = repository.insertProduct(product)

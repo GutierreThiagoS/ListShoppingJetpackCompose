@@ -18,6 +18,8 @@ interface ProductRepository {
 
     fun consultCategoryList(): Flow<List<Category>>
 
+    fun getAllBrand(): Flow<List<String>>
+
     fun insertCategory(category: Category): Long
 
     fun insertShopping(shopping: ItemShopping): ItemShopping?

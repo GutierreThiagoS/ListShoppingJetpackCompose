@@ -20,6 +20,8 @@ val Teal700 = Color(0xFF018786)
 val TealBlack10 = Color(0xFF001122)
 val TealBlack200 = Color(0xFF94FDD7)
 val TealBlack700 = Color(0xFFB4FFEE)
+val GrayLight = Color(0xFFDDDDDD)
+val Gray = Color(0xFFAAAAAA)
 
 /*val BlackBlue = Color(0xFF000055)
 

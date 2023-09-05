@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,10 +42,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mylists.NavigationScreen
 import com.example.mylists.R
+import com.example.mylists.composable.AutocompleteOutlinedTextField
+import com.example.mylists.composable.FloatingActionButtonItem
 import com.example.mylists.domain.model.Product
 import com.example.mylists.framework.presentation.dialog.DialogArgs
 import com.example.mylists.framework.presentation.dialog.ShowBaseDialog
-import com.example.mylists.framework.presentation.products.FloatingActionButtonItem
 import com.example.mylists.framework.ui.main.MainViewModel
 import com.example.mylists.framework.utils.notNull
 import com.example.mylists.framework.utils.toFloatNotNull
@@ -74,7 +76,9 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
 
     val (checkedState, onStateChange) = remember { mutableStateOf(true) }
 
-//    val navigationNav by mainViewModel.navigationNav.collectAsState()
+    val categoryList by viewModel.categoryList.collectAsState(listOf())
+
+    val brandList by viewModel.brandList.collectAsState(listOf())
 
     if (itemInputs.isEmpty()) {
         itemInputs.addAll(
@@ -117,7 +121,12 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
             itemInputs.forEach { itemField ->
                 OutlinedEditText(
                     label = itemField.label,
-                    keyboardType = itemField.keyboardType
+                    keyboardType = itemField.keyboardType,
+                    suggestions = when (itemField.label) {
+                        "Categoria" -> categoryList.map { it.nameCategory }
+                        "Marca" -> brandList
+                        else -> listOf()
+                    }
                 ) { text ->
                     itemField.textEdit = text
                 }
@@ -198,6 +207,7 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
 fun OutlinedEditText(
     label: String,
     keyboardType: KeyboardType,
+    suggestions: List<String> = emptyList(),
     returnText: (text: String) -> Unit
 ) {
     var text by remember { mutableStateOf("") }
@@ -205,27 +215,49 @@ fun OutlinedEditText(
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    OutlinedTextField(
-        value = text,
-        onValueChange = { newText ->
-            isError = text.isNotBlank() && newText.isBlank()
-            text = newText
-            returnText(newText)
-
-        },
-        label = { Text(label) },
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done,
-            keyboardType = keyboardType
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = {
-                keyboardController?.hide()
-            }
-        ),
-        isError = isError,
-        modifier = Modifier.fillMaxWidth(),
-    )
+    if (suggestions.isNotEmpty())
+        AutocompleteOutlinedTextField(
+            value = text,
+            suggestions = suggestions,
+            onValueChange = { newText ->
+                isError = text.isNotBlank() && newText.isBlank()
+                text = newText
+                returnText(newText)
+            },
+            label =  { Text(label) },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = keyboardType
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            ),
+            isError = isError,
+        )
+    else {
+        OutlinedTextField(
+            value = text,
+            onValueChange = { newText ->
+                isError = text.isNotBlank() && newText.isBlank()
+                text = newText
+                returnText(newText)
+            },
+            label = { Text(label) },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                keyboardType = keyboardType
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            ),
+            isError = isError,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 fun findItem(value: String): String? {
@@ -237,9 +269,10 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
     var text by rememberSaveable { mutableStateOf("1") }
 
     Row(modifier = Modifier.padding(start = 5.dp)) {
-        FloatingActionButtonItem(Icons.Filled.Add, 30.dp) {
-            val quantity = text.toIntOrNull() ?: 0
-            text = "${quantity + 1}"
+
+        FloatingActionButtonItem(ImageVector.vectorResource(id = R.drawable.baseline_remove), 30.dp) {
+            val quantity = (text.toIntOrNull() ?: 0) - 1
+            text = "${ if (quantity > 1) quantity else 1}"
             returnText(text)
         }
 
@@ -264,13 +297,12 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
             )
         )
 
-        FloatingActionButtonItem(ImageVector.vectorResource(id = R.drawable.baseline_remove), 30.dp) {
-            val quantity = (text.toIntOrNull() ?: 0) - 1
-            text = "${ if (quantity > 1) quantity else 1}"
+        FloatingActionButtonItem(Icons.Filled.Add, 30.dp) {
+            val quantity = text.toIntOrNull() ?: 0
+            text = "${quantity + 1}"
             returnText(text)
         }
     }
-
 }
 
 @Composable

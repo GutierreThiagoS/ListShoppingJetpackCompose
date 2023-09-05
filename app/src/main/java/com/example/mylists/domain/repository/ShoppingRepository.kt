@@ -2,7 +2,6 @@ package com.example.mylists.domain.repository
 
 import com.example.mylists.domain.model.ItemShopping
 import com.example.mylists.domain.model.ProductOnItemShopping
-import com.example.mylists.sealed_class.BottomMenuState
 import kotlinx.coroutines.flow.Flow
 
 interface ShoppingRepository {
@@ -15,7 +14,6 @@ interface ShoppingRepository {
 
     fun editPriceProduct(productOnItemShopping: ProductOnItemShopping): Int
 
-    suspend fun sizeListsProdAndShopping(): BottomMenuState
-
     fun navigationBadgeCount(title: String): Flow<Int?>
+    fun checkProduct()
 }

@@ -16,18 +16,11 @@ class ProductViewModel(
 
     fun insertProductInShoppingList(product: ProductOnItemShopping){
         viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ ->  }){
-            /*val state = */repository.insertShopping(
+            repository.insertShopping(
                 shopping = ItemShopping(
                     product.idItem, product.idProduct, product.quantity, product.selected
                 )
             )
-            withContext(Dispatchers.Main){
-               /* if (state != null){
-                    if (state.quantity == 0) ProductEvent.notifyErrorInsert("Deletado!!")
-                    else ProductEvent.notifyInsertProduct("Produto Inserido na Lista")
-                }
-                else ProductEvent.notifyErrorInsert("Erro!!")*/
-            }
         }
     }
 

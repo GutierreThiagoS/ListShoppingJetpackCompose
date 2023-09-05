@@ -19,7 +19,7 @@ interface CategoryDao {
     @Query("SELECT * FROM Category WHERE nameCategory = :name Limit 1")
     fun consultCategory(name: String): Category?
 
-    @Query("SELECT * FROM Category")
+    @Query("SELECT * FROM Category ORDER BY nameCategory ASC")
     fun categoryList(): Flow<List<Category>>
 
     @Query("SELECT * FROM Category")
