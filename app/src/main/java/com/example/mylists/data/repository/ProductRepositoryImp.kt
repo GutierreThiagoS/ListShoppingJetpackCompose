@@ -59,10 +59,14 @@ class ProductRepositoryImp(
     }
 
     override fun removerProduct(product: ProductOnItemShopping): String {
-        return if (itemShoppingDao.consultItemShopping(productId = product.idProduct) == null){
+        val itemShopping = itemShoppingDao.consultItemShopping(productId = product.idProduct)
+        return if (itemShopping == null){
             productDao.deleteId(productId = product.idProduct)
             "Produto Deletado!"
-        } else "Esse produto esta No Carrinho!"
+        } else {
+            itemShoppingDao.delete(itemShopping)
+            "Esse produto esta no Carrinho!"
+        }
     }
 
     override fun removerCategoryCheckProducts(category: Category): String {
