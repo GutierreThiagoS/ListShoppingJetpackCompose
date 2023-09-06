@@ -1,9 +1,6 @@
 package com.example.mylists.framework.ui.main
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Calculate
@@ -11,7 +8,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,23 +24,6 @@ import com.example.mylists.NavigationScreen
 import com.example.mylists.framework.ui.theme.MyListsTheme
 import com.example.mylists.framework.ui.theme.TealBlack10
 import org.koin.androidx.compose.koinViewModel
-
-
-@Composable
-fun FragmentMessage() {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
-    ) {
-        Column(modifier = Modifier
-            .padding(24.dp)
-            .fillMaxWidth()
-            .fillMaxHeight()
-        ) {
-
-        }
-    }
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

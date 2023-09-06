@@ -29,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mylists.NavigationScreen
 import com.example.mylists.framework.presentation.add.AddProductFrag
+import com.example.mylists.framework.presentation.configuration.ConfigurationFrag
 import com.example.mylists.framework.presentation.products.ProductsFrag
 import com.example.mylists.framework.presentation.shopping.ShoppingFrag
 import com.example.mylists.framework.ui.theme.LightBlue
@@ -152,7 +153,7 @@ fun NavHostApp(
             AddProductFrag(returnDest = returnDest)
         }
         composable(NavigationScreen.SETTINGS.label) {
-            FragmentMessage()
+            ConfigurationFrag()
         }
     }
 }

@@ -23,6 +23,9 @@ interface ProductDao {
     @Update
     fun update(product: Product): Int
 
+    @Query("UPDATE Product SET description = :description, price = :price WHERE idProduct = :productId")
+    fun updatePrice(productId: Int, description: String, price: Float): Int
+
     @Query("DELETE FROM Product WHERE idProduct = :productId")
     fun deleteId(productId: Int)
 
@@ -32,6 +35,9 @@ interface ProductDao {
         ORDER BY description ASC
     """)
     fun getProduct(description: String): Product?
+
+    @Query("SELECT * FROM Product WHERE idProduct = :id")
+    fun getProduct(id: Int): Product?
 
     @Query("""
         SELECT S.idItem as idItem, P.idProduct, P.description, P.imgProduct, P.brandProduct,

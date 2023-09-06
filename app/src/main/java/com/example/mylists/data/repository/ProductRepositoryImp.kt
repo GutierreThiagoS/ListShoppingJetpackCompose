@@ -46,8 +46,12 @@ class ProductRepositoryImp(
 
     override fun insertShopping(shopping: ItemShopping): ItemShopping? {
 
-        if (shopping.quantity <= 0)
-            itemShoppingDao.delete(itemShoppingDao.consultItemShopping(shopping.idProductFK)!!)
+        if (shopping.quantity <= 0) {
+            val itemDelete = itemShoppingDao.consultItemShopping(shopping.idProductFK)
+            if (itemDelete != null) {
+                itemShoppingDao.delete(itemDelete)
+            }
+        }
         else if(itemShoppingDao.update(shopping) == 0)
             itemShoppingDao.insert(shopping)
 
@@ -59,5 +63,25 @@ class ProductRepositoryImp(
             productDao.deleteId(productId = product.idProduct)
             "Produto Deletado!"
         } else "Esse produto esta No Carrinho!"
+    }
+
+    override fun removerCategoryCheckProducts(category: Category): String {
+        val products = productDao.getAll().filter { it.idCategoryFK == category.idCategory }
+        return if (products.isEmpty()) {
+            if (categoryDao.delete(category) == 0) ""
+            else "Categoria não deletada!"
+        } else {
+            "Existe Produtos nessa categoria você deve removelos!"
+        }
+    }
+
+    override fun editProduct(
+        product: ProductOnItemShopping,
+        newDescription: String,
+        newPrice: Float
+    ): String {
+        return if (productDao.updatePrice(product.idProduct, newDescription, newPrice) == 1) {
+            "Ok"
+        } else "Não salvo!"
     }
 }

@@ -1,6 +1,7 @@
 package com.example.mylists.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,6 +16,9 @@ interface CategoryDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(vararg category: Category)
+
+    @Delete
+    fun delete(category: Category): Int
 
     @Query("SELECT * FROM Category WHERE nameCategory = :name Limit 1")
     fun consultCategory(name: String): Category?

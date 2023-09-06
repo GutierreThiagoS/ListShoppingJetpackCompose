@@ -1,5 +1,6 @@
 package com.example.mylists.framework.presentation.products
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mylists.domain.model.ItemShopping
@@ -21,6 +22,16 @@ class ProductViewModel(
                     product.idItem, product.idProduct, product.quantity, product.selected
                 )
             )
+        }
+    }
+
+    fun editProduct(product: ProductOnItemShopping, newDescription: String, newPrice: Float, alert: (message: String) -> Unit){
+        viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ ->  }) {
+            val message = repository.editProduct(product, newDescription, newPrice)
+            withContext(Dispatchers.Main) {
+                Log.e("Message", message)
+                alert(message)
+            }
         }
     }
 

@@ -25,4 +25,8 @@ interface ProductRepository {
     fun insertShopping(shopping: ItemShopping): ItemShopping?
 
     fun removerProduct(product: ProductOnItemShopping): String
+
+    fun removerCategoryCheckProducts(category: Category): String
+
+    fun editProduct(product: ProductOnItemShopping, newDescription: String, newPrice: Float): String
 }

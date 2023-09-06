@@ -1,6 +1,7 @@
 package com.example.mylists.di
 
 import com.example.mylists.framework.presentation.add.AddNewProductViewModel
+import com.example.mylists.framework.presentation.configuration.ConfigurationViewModel
 import com.example.mylists.framework.presentation.products.ProductViewModel
 import com.example.mylists.framework.presentation.shopping.ShoppingViewModel
 import com.example.mylists.framework.ui.main.MainViewModel
@@ -23,6 +24,12 @@ val viewModelModule = module {
 
     viewModel {
         AddNewProductViewModel(
+            repository = get()
+        )
+    }
+
+    viewModel {
+        ConfigurationViewModel(
             repository = get()
         )
     }

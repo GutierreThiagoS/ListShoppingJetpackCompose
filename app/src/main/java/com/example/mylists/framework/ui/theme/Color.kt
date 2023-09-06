@@ -33,3 +33,4 @@ val Navy = Color(0xFF073042)
 val LightBlue = Color(0xFFD7EFFE)
 
 val BackgroundSpinner = Color(0x55000000)
+val Bordor = Color(0xFF550000)
