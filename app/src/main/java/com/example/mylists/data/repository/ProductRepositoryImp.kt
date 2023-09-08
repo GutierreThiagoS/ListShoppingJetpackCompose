@@ -74,9 +74,7 @@ class ProductRepositoryImp(
         return if (products.isEmpty()) {
             if (categoryDao.delete(category) == 0) ""
             else "Categoria não deletada!"
-        } else {
-            "Existe Produtos nessa categoria você deve removelos!"
-        }
+        } else "Existe Produtos nessa categoria você deve removelos!"
     }
 
     override fun editProduct(

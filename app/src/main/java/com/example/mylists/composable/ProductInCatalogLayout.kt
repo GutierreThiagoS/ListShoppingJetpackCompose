@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
@@ -56,24 +56,29 @@ fun CategoryInProductsLayout(products: List<ProductOnItemShopping>, isVisibleChe
         .sortedBy { it.nameCategory }
         .distinct()
 
-    LazyColumn(modifier = Modifier
-        .padding(vertical = 4.dp)
-    ) {
-        items(categories) { category ->
+    LazyColumn {
+        itemsIndexed(categories) { index, category ->
             val isProductDrop = remember { mutableStateOf(true) }
 
             OutlinedCard(
                 Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)) {
+                    .fillMaxWidth().let {
+                        if (index == 0) {
+                            it.padding(4.dp)
+                        } else it.padding(bottom = 4.dp).padding(horizontal = 4.dp)
+                    }
+
+            ) {
                 Column {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(GrayLight)
+                            .clickable { isProductDrop.value = isProductDrop.value.not() }
                             .padding(start = 16.dp, top = 6.dp, bottom = 6.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+
                     ) {
                         Text(
                             text = category.nameCategory,
@@ -192,8 +197,10 @@ fun ShoppingProductListItem(
                     }
                 }
         ) {
-            Column(modifier = Modifier
-                .padding(16.dp)
+            Column(modifier = Modifier.let {
+                if (isVisibleCheck) it.padding(vertical = 16.dp).padding(end = 16.dp)
+                else it.padding(16.dp)
+            }
                 .fillMaxWidth()
             ) {
                 ActionButtonAmountTextField(

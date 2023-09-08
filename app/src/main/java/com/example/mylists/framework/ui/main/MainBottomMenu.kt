@@ -107,12 +107,12 @@ fun ListBottomMenuNavigation(
             contentColor = TealBlack700,
             containerColor = LightBlue,
             floatingActionButton = {
-                if (navigationState.title == NavigationScreen.SHOPPING.label || navigationState.title == NavigationScreen.PRODUCTS.label) {
+                /*if (navigationState.title == NavigationScreen.SHOPPING.label || navigationState.title == NavigationScreen.PRODUCTS.label) {
                     FloatingButton {
                         mainViewModel.setNavigation(NavigationScreen.ADD.label)
                         navController.navigate(NavigationScreen.ADD.label)
                     }
-                }
+                }*/
             }
         ) {
             Column(modifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
