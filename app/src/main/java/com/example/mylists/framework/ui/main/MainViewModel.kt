@@ -1,11 +1,12 @@
 package com.example.mylists.framework.ui.main
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingCart
@@ -14,12 +15,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.mylists.NavigationScreen
 import com.example.mylists.domain.model.BottomNavigationItem
 import com.example.mylists.domain.model.NavigationSelected
+import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.domain.repository.ShoppingRepository
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(
     private val shoppingRepository: ShoppingRepository
@@ -27,6 +31,9 @@ class MainViewModel(
 
     private val _navigationState = MutableStateFlow(NavigationSelected())
     val navigationState: StateFlow<NavigationSelected> = _navigationState
+
+    private val _barCodeState = MutableStateFlow<String?>(null)
+    val barCodeState: StateFlow<String?> = _barCodeState
 
     val total: Flow<Float?> = shoppingRepository.getTotal()
 
@@ -44,11 +51,17 @@ class MainViewModel(
             hasNews = false
         ),
         BottomNavigationItem(
+            title = NavigationScreen.TO_DO.label,
+            selectedIcon = Icons.Filled.EventNote,
+            unselectedIcon = Icons.Outlined.EventNote,
+            hasNews = false
+        ),
+        /*BottomNavigationItem(
             title = NavigationScreen.ADD.label,
             selectedIcon = Icons.Filled.Add,
             unselectedIcon = Icons.Outlined.Add,
             hasNews = false
-        ),
+        ),*/
         BottomNavigationItem(
             title = NavigationScreen.SETTINGS.label,
             selectedIcon = Icons.Filled.Settings,
@@ -62,6 +75,10 @@ class MainViewModel(
             NavigationSelected(title, index ?: items.indexOf(items.find { it.title == title }))
     }
 
+    fun setBarCode(barCode: String?) {
+        _barCodeState.value = barCode
+    }
+
     fun checkProduct() {
         viewModelScope.launch(Dispatchers.IO) {
             shoppingRepository.checkProduct()
@@ -69,5 +86,16 @@ class MainViewModel(
     }
 
     fun navigationBadgeCount(title: String) = shoppingRepository.navigationBadgeCount(title)
+
+    fun getBarCodeInProduct(barCode: String, response: (products: List<ProductOnItemShopping>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            Log.e("CoroutineExceptionHandler", "$throwable")
+        }) {
+            val productsShopping = shoppingRepository.getProductInBarCode(barCode)
+            withContext(Dispatchers.Main) {
+                response(productsShopping)
+            }
+        }
+    }
 
 }

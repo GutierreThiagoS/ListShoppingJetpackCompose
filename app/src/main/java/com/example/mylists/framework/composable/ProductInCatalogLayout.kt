@@ -1,4 +1,4 @@
-package com.example.mylists.composable
+package com.example.mylists.framework.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

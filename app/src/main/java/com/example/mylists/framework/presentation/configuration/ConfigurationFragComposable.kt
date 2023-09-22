@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.mylists.composable.LineDivided
+import com.example.mylists.framework.composable.LineDivided
 import com.example.mylists.domain.model.Category
 import org.koin.androidx.compose.koinViewModel
 

@@ -54,10 +54,11 @@ interface ProductDao {
         C.idCategory, C.nameCategory, P.ean, P.price, S.quantity, S.selected FROM Product P 
         LEFT JOIN ItemShopping S ON (S.idProductFK = P.idProduct)
         LEFT JOIN Category C ON C.idCategory = P.idCategoryFK
+        WHERE p.ean = :barcode OR :barcode = ''
         GROUP BY P.idProduct
         ORDER BY description ASC
         """)
-    fun listAllProductOnItemShopping(): List<ProductOnItemShopping>
+    fun listAllProductOnItemShopping(barcode: String = ""): List<ProductOnItemShopping>
 
     @Query("SELECT COUNT(*) FROM Product P")
     fun countProductOnItemShopping(): Flow<Int?>

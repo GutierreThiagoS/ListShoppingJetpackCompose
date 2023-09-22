@@ -16,4 +16,5 @@ interface ShoppingRepository {
 
     fun navigationBadgeCount(title: String): Flow<Int?>
     fun checkProduct()
+    suspend fun getProductInBarCode(barcode: String): List<ProductOnItemShopping>
 }

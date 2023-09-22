@@ -5,13 +5,16 @@ import com.example.mylists.NavigationScreen
 import com.example.mylists.data.local.dao.CategoryDao
 import com.example.mylists.data.local.dao.ItemShoppingDao
 import com.example.mylists.data.local.dao.ProductDao
+import com.example.mylists.data.remote.BarCodeRetrofitApi
 import com.example.mylists.domain.model.Category
 import com.example.mylists.domain.model.ItemShopping
 import com.example.mylists.domain.model.Product
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.domain.repository.ShoppingRepository
+import com.example.mylists.framework.utils.logE
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import retrofit2.awaitResponse
 import kotlin.Exception
 
 class ShoppingRepositoryImp(
@@ -71,6 +74,32 @@ class ShoppingRepositoryImp(
         }
         if (categoryDao.getList().isEmpty()) {
             categoryDao.insertAll(*categories.toTypedArray())
+        }
+    }
+
+
+    override suspend fun getProductInBarCode(barcode: String): List<ProductOnItemShopping> {
+        return try {
+            val productOnItemShopping = productDao.listAllProductOnItemShopping(barcode)
+
+            productOnItemShopping.ifEmpty {
+                val response =
+                    BarCodeRetrofitApi.getService().getProductBarCode(barcode, "").awaitResponse()
+
+                val resp = response.body()
+                logE("ErroBarCode response $response")
+                logE("ErroBarCode resp $resp")
+
+                if (response.isSuccessful && resp != null) {
+                    resp
+                    emptyList()
+                } else {
+                    emptyList()
+                }
+            }
+        } catch (e: Exception) {
+            logE("ErroBarCode $e")
+            emptyList()
         }
     }
 

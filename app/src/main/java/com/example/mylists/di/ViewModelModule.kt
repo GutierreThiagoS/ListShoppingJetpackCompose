@@ -4,6 +4,7 @@ import com.example.mylists.framework.presentation.add.AddNewProductViewModel
 import com.example.mylists.framework.presentation.configuration.ConfigurationViewModel
 import com.example.mylists.framework.presentation.products.ProductViewModel
 import com.example.mylists.framework.presentation.shopping.ShoppingViewModel
+import com.example.mylists.framework.presentation.to_do.ToDoViewModel
 import com.example.mylists.framework.ui.main.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -24,6 +25,12 @@ val viewModelModule = module {
 
     viewModel {
         AddNewProductViewModel(
+            repository = get()
+        )
+    }
+
+    viewModel {
+        ToDoViewModel(
             repository = get()
         )
     }

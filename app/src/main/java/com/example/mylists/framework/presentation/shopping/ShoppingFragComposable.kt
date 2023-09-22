@@ -14,7 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mylists.R
-import com.example.mylists.composable.CategoryInProductsLayout
+import com.example.mylists.framework.composable.CategoryInProductsLayout
 import com.example.mylists.framework.ui.theme.MyListsTheme
 import org.koin.androidx.compose.koinViewModel
 

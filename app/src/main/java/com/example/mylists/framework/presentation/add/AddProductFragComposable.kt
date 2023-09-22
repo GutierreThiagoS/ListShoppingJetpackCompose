@@ -14,9 +14,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.EventNote
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -42,8 +44,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mylists.NavigationScreen
 import com.example.mylists.R
-import com.example.mylists.composable.AutocompleteOutlinedTextField
-import com.example.mylists.composable.FloatingActionButtonItem
+import com.example.mylists.framework.composable.AutocompleteOutlinedTextField
+import com.example.mylists.framework.composable.FloatingActionButtonItem
 import com.example.mylists.domain.model.Product
 import com.example.mylists.framework.presentation.dialog.DialogArgs
 import com.example.mylists.framework.presentation.dialog.ShowBaseDialog
@@ -55,7 +57,12 @@ import org.koin.androidx.compose.koinViewModel
 val itemInputs = mutableListOf<ItemFieldAddProd>()
 
 @Composable
-fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainViewModel: MainViewModel = koinViewModel(), returnDest: (destination: String) -> Unit) {
+fun AddProductFrag(
+    viewModel: AddNewProductViewModel = koinViewModel(),
+    mainViewModel: MainViewModel = koinViewModel(),
+    returnDest: (destination: String) -> Unit,
+    readBarCode: () -> Unit
+) {
 
     var showDialog by remember { mutableStateOf(
         DialogArgs("Error", "Existe Campo vazio!")
@@ -91,6 +98,10 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
                 ),
                 ItemFieldAddProd(
                     label = "Categoria"
+                ),
+                ItemFieldAddProd(
+                    label = "Código de Barra",
+                    keyboardType = KeyboardType.Number
                 ),
                 ItemFieldAddProd(
                     label = "Preço",
@@ -206,7 +217,7 @@ fun AddProductFrag(viewModel: AddNewProductViewModel = koinViewModel(), mainView
 @Composable
 fun OutlinedEditText(
     label: String,
-    keyboardType: KeyboardType,
+    keyboardType: KeyboardType = KeyboardType.Text,
     suggestions: List<String> = emptyList(),
     returnText: (text: String) -> Unit
 ) {
@@ -224,7 +235,10 @@ fun OutlinedEditText(
                 text = newText
                 returnText(newText)
             },
-            label =  { Text(label) },
+            label =  {
+                Text(label)
+                if (label == "Código de Barra") Icon(imageVector = Icons.Outlined.EventNote, contentDescription = "")
+            },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done,
                 keyboardType = keyboardType
@@ -308,5 +322,5 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun AddProductFragPreview() {
-    AddProductFrag {}
+    AddProductFrag( returnDest = {}, readBarCode = {})
 }

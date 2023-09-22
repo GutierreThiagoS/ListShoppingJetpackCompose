@@ -1,4 +1,4 @@
-package com.example.mylists.composable
+package com.example.mylists.framework.composable
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
