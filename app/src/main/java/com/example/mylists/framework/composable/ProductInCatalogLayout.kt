@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.ArrowDropUp
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +41,6 @@ import com.example.mylists.domain.model.Category
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.framework.presentation.products.ProductViewModel
 import com.example.mylists.framework.ui.theme.Bordor
-import com.example.mylists.framework.ui.theme.DarkGreen
 import com.example.mylists.framework.ui.theme.Gray
 import com.example.mylists.framework.ui.theme.GrayLight
 import com.example.mylists.framework.ui.theme.Teal700
@@ -51,7 +49,11 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun CategoryInProductsLayout(products: List<ProductOnItemShopping>, isVisibleCheck : Boolean = false) {
+fun CategoryInProductsLayout(
+    products: List<ProductOnItemShopping>,
+    isVisibleCheck : Boolean = false,
+    editProductClick: (product: ProductOnItemShopping) -> Unit
+) {
     val categories = products.map { Category(it.idCategory, it.nameCategory) }
         .sortedBy { it.nameCategory }
         .distinct()
@@ -102,9 +104,11 @@ fun CategoryInProductsLayout(products: List<ProductOnItemShopping>, isVisibleChe
                             ShoppingProductListItem(
                                 product = product,
                                 offsetXGlobal = offsetX,
-                                setOffsetXGlobal = { o, i -> offsetX = o },
+                                setOffsetXGlobal = { o, _ -> offsetX = o },
                                 index = index,
-                                isVisibleCheck = isVisibleCheck)
+                                isVisibleCheck = isVisibleCheck,
+                                editProductClick = editProductClick
+                            )
                         }
                     }
                 }
@@ -120,15 +124,12 @@ fun ShoppingProductListItem(
     offsetXGlobal: Float,
     setOffsetXGlobal: (value: Float, index: Int) -> Unit,
     isVisibleCheck: Boolean = false,
-    viewModel: ProductViewModel = koinViewModel()
+    viewModel: ProductViewModel = koinViewModel(),
+    editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
 
     var offsetX by remember { mutableFloatStateOf(offsetXGlobal) }
     val coroutineScope = rememberCoroutineScope()
-
-    var editProduct by remember { mutableStateOf(false) }
-    var newDescription by remember { mutableStateOf(product.description) }
-    var newPrice by remember { mutableFloatStateOf(product.price) }
 
     if (index != 0 ) LineDivided()
     Box(
@@ -140,24 +141,16 @@ fun ShoppingProductListItem(
             .fillMaxWidth()
             .background(
                 if (offsetX < 0) Bordor else if (offsetX > 0) {
-                    if (editProduct) DarkGreen
-                    else Teal700
+                    Teal700
                 } else Color.White
             )
             .padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(onClick = {
-                if (editProduct) {
-                    if (product.description != newDescription || product.price != newPrice) {
-                        viewModel.editProduct(product, newDescription, newPrice) {
-                            editProduct = false
-                            offsetX = 0f
-                        }
-                    } else editProduct = false
-                } else editProduct = true
+                editProductClick(product)
             }) {
-                Icon(imageVector = if (editProduct) Icons.Outlined.Save else Icons.Outlined.Edit, contentDescription = "Editar", tint = Color.White)
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Editar", tint = Color.White)
             }
             IconButton(onClick = { viewModel.removeProduct(product) { offsetX = 0f } }) {
                 Icon(imageVector = Icons.Outlined.Delete, contentDescription = "Deletar", tint = Color.White)
@@ -176,7 +169,7 @@ fun ShoppingProductListItem(
                         val offset = offsetX
                         coroutineScope.launch {
                             delay(5000)
-                            if (offset == offsetX && !editProduct) {
+                            if (offset == offsetX) {
                                 offsetX = 0f
                             }
                         }
@@ -189,7 +182,6 @@ fun ShoppingProductListItem(
                                     delay(500)
                                     if (offsetX < 200 && offsetX > -200 && offsetXLocal == offsetX) {
                                         offsetX = 0f
-                                        editProduct = false
                                     }
                                 }
                             }
@@ -205,12 +197,7 @@ fun ShoppingProductListItem(
             ) {
                 ActionButtonAmountTextField(
                     product = product,
-                    isVisibleCheck = isVisibleCheck,
-                    isEdit = editProduct,
-                    newDescription = newDescription,
-                    newPrice = newPrice,
-                    newDescriptionChange = { newDescription = it},
-                    newPriceChange = { newPrice = it.toFloat() }
+                    isVisibleCheck = isVisibleCheck
                 )
             }
         }

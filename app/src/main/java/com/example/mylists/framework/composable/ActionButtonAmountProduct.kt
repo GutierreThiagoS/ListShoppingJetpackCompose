@@ -13,11 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,16 +35,11 @@ import com.example.mylists.framework.presentation.products.ProductViewModel
 import com.example.mylists.framework.ui.theme.DarkGreen
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionButtonAmountTextField(
     product: ProductOnItemShopping,
     isVisibleCheck : Boolean = false,
     isEdit: Boolean = false,
-    newDescription: String,
-    newPrice: Float,
-    newDescriptionChange: (value: String) -> Unit,
-    newPriceChange: (value: String) -> Unit,
     viewModel: ProductViewModel = koinViewModel()
 ) {
     Row(
@@ -68,40 +61,27 @@ fun ActionButtonAmountTextField(
             modifier = Modifier
                 .weight(1f)
         ) {
-            if (isEdit) {
-                OutlinedTextField(
-                    value = newDescription,
-                    onValueChange = {
-                        newDescriptionChange(it)
-                    },
-                    label = { Text(text = "Descrição") }
-                )
-
-                OutlinedTextField(
-                    value = newPrice.toString(),
-                    onValueChange = {
-                        newPriceChange(it)
-                    },
-                    label = { Text(text = "Preço") }
-                )
-            } else {
-                Text(text = product.description)
-                Text(
-                    text = if (product.quantity > 1) {
-                        String.format(
-                            "R$ %.2f (%.2f * %d)",
-                            product.price * product.quantity,
-                            product.price,
-                            product.quantity
-                        )
-                    } else String.format("R$ %.2f", product.price),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = DarkGreen
-                )
-            }
+            Text(text = product.description)
+            Text(
+                text = "Ean: " + product.ean,
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = if (product.quantity > 1) {
+                    String.format(
+                        "R$ %.2f (%.2f * %d)",
+                        product.price * product.quantity,
+                        product.price,
+                        product.quantity
+                    )
+                } else String.format("R$ %.2f", product.price),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = DarkGreen
+            )
         }
+
         var text by rememberSaveable { mutableStateOf("${product.quantity}") }
 
         FloatingActionButtonItem(Icons.Outlined.Remove) {
@@ -111,7 +91,7 @@ fun ActionButtonAmountTextField(
                 viewModel.insertProductInShoppingList(product = product)
             }
         }
-
+        text = product.quantity.toString()
         BasicTextField(
             modifier = Modifier
                 .width(IntrinsicSize.Min)

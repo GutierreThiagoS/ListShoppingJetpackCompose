@@ -2,6 +2,7 @@ package com.example.mylists.domain.repository
 
 import com.example.mylists.domain.model.ItemShopping
 import com.example.mylists.domain.model.ProductOnItemShopping
+import com.example.mylists.state.StateProductBarCode
 import kotlinx.coroutines.flow.Flow
 
 interface ShoppingRepository {
@@ -16,5 +17,5 @@ interface ShoppingRepository {
 
     fun navigationBadgeCount(title: String): Flow<Int?>
     fun checkProduct()
-    suspend fun getProductInBarCode(barcode: String): List<ProductOnItemShopping>
+    suspend fun getProductInBarCode(barcode: String, company: Int = 2): StateProductBarCode
 }

@@ -15,8 +15,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.mylists.NavigationScreen
 import com.example.mylists.domain.model.BottomNavigationItem
 import com.example.mylists.domain.model.NavigationSelected
-import com.example.mylists.domain.model.ProductOnItemShopping
+import com.example.mylists.domain.model.Product
 import com.example.mylists.domain.repository.ShoppingRepository
+import com.example.mylists.state.StateProductBarCode
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,12 @@ class MainViewModel(
 
     private val _barCodeState = MutableStateFlow<String?>(null)
     val barCodeState: StateFlow<String?> = _barCodeState
+
+    private val _productState = MutableStateFlow<Product?>(null)
+    val productState: StateFlow<Product?> = _productState
+
+    private val _categoryState = MutableStateFlow<String?>(null)
+    val categoryState: StateFlow<String?> = _categoryState
 
     val total: Flow<Float?> = shoppingRepository.getTotal()
 
@@ -77,6 +84,8 @@ class MainViewModel(
 
     fun setBarCode(barCode: String?) {
         _barCodeState.value = barCode
+        if (_productState.value != null) _productState.value = null
+        if (_categoryState.value != null) _categoryState.value = null
     }
 
     fun checkProduct() {
@@ -87,15 +96,30 @@ class MainViewModel(
 
     fun navigationBadgeCount(title: String) = shoppingRepository.navigationBadgeCount(title)
 
-    fun getBarCodeInProduct(barCode: String, response: (products: List<ProductOnItemShopping>) -> Unit) {
+    fun getBarCodeInProduct(barCode: String, redirect: (info: String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
             Log.e("CoroutineExceptionHandler", "$throwable")
         }) {
-            val productsShopping = shoppingRepository.getProductInBarCode(barCode)
+            val state = shoppingRepository.getProductInBarCode(barCode)
             withContext(Dispatchers.Main) {
-                response(productsShopping)
+                when(state){
+                    is StateProductBarCode.SuccessRoom -> {}
+                    is StateProductBarCode.SuccessService -> {
+                        _productState.value = state.product
+                        _categoryState.value = state.categoryName
+                        redirect("")
+                    }
+                    is StateProductBarCode.Error -> {redirect("${state.info} - Code: ${state.code}")}
+                }
             }
         }
+    }
+
+    fun setProductEdit(product: Product, categoryName: String) {
+        if (_productState.value != null) _productState.value = null
+        if (_categoryState.value != null) _categoryState.value = null
+        _productState.value = product
+        _categoryState.value = categoryName
     }
 
 }

@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class ItemShopping(
     @PrimaryKey(autoGenerate = true) val idItem: Int = 0,
     val idProductFK: Int,
-    val quantity: Int,
+    var quantity: Int,
     val selected: Boolean
 )

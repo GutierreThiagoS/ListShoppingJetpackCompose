@@ -13,3 +13,12 @@ fun String?.toFloatNotNull(): Float {
     }
 }
 
+fun String.capitalizeDescription(): String {
+    val strings = split(" ").map { text ->
+        if (text.length > 3)
+            text.mapIndexed { index, c ->  if (index == 0) c.uppercase() else c.lowercase() }.joinToString("")
+        else text.lowercase()
+    }
+    return strings.joinToString(" ")
+}
+

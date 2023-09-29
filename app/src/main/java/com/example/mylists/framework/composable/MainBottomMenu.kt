@@ -1,5 +1,6 @@
 package com.example.mylists.framework.composable
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -33,12 +33,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.mylists.App
 import com.example.mylists.NavigationScreen
+import com.example.mylists.domain.model.Product
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.framework.presentation.add.AddProductFrag
 import com.example.mylists.framework.presentation.add_to_do.AddToDoList
 import com.example.mylists.framework.presentation.configuration.ConfigurationFrag
-import com.example.mylists.framework.presentation.dialog.DialogProducts
 import com.example.mylists.framework.presentation.products.ProductsFrag
 import com.example.mylists.framework.presentation.shopping.ShoppingFrag
 import com.example.mylists.framework.presentation.to_do.ToDoListFrag
@@ -55,8 +56,7 @@ import org.koin.androidx.compose.koinViewModel
 fun BottomMenu(
     barcode: String?,
     contentPadding: PaddingValues,
-    mainViewModel: MainViewModel = koinViewModel(),
-    readBarCode: () -> Unit
+    mainViewModel: MainViewModel = koinViewModel()
 ) {
 
     LaunchedEffect(mainViewModel){
@@ -67,24 +67,15 @@ fun BottomMenu(
 
     val navController = rememberNavController()
 
-    val dialogListProduct = rememberSaveable { mutableListOf<ProductOnItemShopping>() }
-
-    if (dialogListProduct.isNotEmpty()) {
-        DialogProducts(
-            dialogList = dialogListProduct
-        ) {
-            dialogListProduct.clear()
-        }
-    }
+    val productState by mainViewModel.productState.collectAsState()
+    val categoryState by mainViewModel.categoryState.collectAsState()
 
     barcode?.let {
-        mainViewModel.getBarCodeInProduct(barcode) { list ->
-            if (list.isNotEmpty()) {
-                dialogListProduct.addAll(list)
-            } else {
+        mainViewModel.getBarCodeInProduct(barcode) {
+            if (it.isBlank()) {
                 mainViewModel.setNavigation(NavigationScreen.ADD_PRODUCT.label)
                 navController.navigate(NavigationScreen.ADD_PRODUCT.label)
-            }
+            } else Toast.makeText(App.context, it, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -143,6 +134,7 @@ fun BottomMenu(
                 ) {
                     FloatingButton {
                         if (navigationState.title == NavigationScreen.TO_DO.label ) {
+                            mainViewModel.setBarCode(null)
                             mainViewModel.setNavigation(NavigationScreen.ADD_TO_DO.label)
                             navController.navigate(NavigationScreen.ADD_TO_DO.label)
                         } else {
@@ -155,9 +147,34 @@ fun BottomMenu(
             floatingActionButtonPosition = FabPosition.Center
         ) {
             Column(modifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
-                NavHostApp(navController,readBarCode = readBarCode, returnDest =  { destination ->
-                    navController.navigate(destination)
-                })
+                NavHostApp(
+                    navController = navController,
+                    productBarCode = productState,
+                    categoryState = categoryState,
+                    returnDest =  { destination ->
+                        mainViewModel.setBarCode(null)
+                        if (destination.isNotBlank()) {
+                            navController.navigate(destination)
+                            mainViewModel.setNavigation(destination)
+                        }
+                    },
+                    editProductClick = { product ->
+                        mainViewModel.setProductEdit(
+                            product = Product(
+                                idProduct = product.idProduct,
+                                description = product.description,
+                                imgProduct = product.imgProduct,
+                                brandProduct = product.brandProduct,
+                                idCategoryFK = product.idCategory,
+                                ean = product.ean,
+                                price = product.price
+                            ),
+                            categoryName = product.nameCategory
+                        )
+                        mainViewModel.setNavigation(NavigationScreen.ADD_PRODUCT.label)
+                        navController.navigate(NavigationScreen.ADD_PRODUCT.label)
+                    }
+                )
             }
         }
     }
@@ -185,21 +202,27 @@ fun FloatingButton(onClick: () -> Unit) {
 @Composable
 fun NavHostApp(
     navController: NavHostController,
+    productBarCode: Product? = null,
+    categoryState: String? = null,
     returnDest: (destination: String) -> Unit,
-    readBarCode: () -> Unit
+    editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
     NavHost(navController, startDestination = NavigationScreen.SHOPPING.label) {
         composable(NavigationScreen.SHOPPING.label) {
-            ShoppingFrag()
+            ShoppingFrag(editProductClick = editProductClick)
         }
         composable(NavigationScreen.PRODUCTS.label) {
-            ProductsFrag()
+            ProductsFrag(editProductClick = editProductClick)
         }
         composable(NavigationScreen.TO_DO.label) {
             ToDoListFrag()
         }
         composable(NavigationScreen.ADD_PRODUCT.label) {
-            AddProductFrag(returnDest = returnDest, readBarCode = readBarCode)
+            AddProductFrag(
+                productBarCode = productBarCode,
+                categoryState = categoryState,
+                returnDest = returnDest
+            )
         }
         composable(NavigationScreen.ADD_TO_DO.label) {
             AddToDoList()

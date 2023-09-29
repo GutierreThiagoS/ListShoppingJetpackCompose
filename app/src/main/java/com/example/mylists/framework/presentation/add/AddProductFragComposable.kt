@@ -14,11 +14,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.EventNote
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -50,18 +48,17 @@ import com.example.mylists.domain.model.Product
 import com.example.mylists.framework.presentation.dialog.DialogArgs
 import com.example.mylists.framework.presentation.dialog.ShowBaseDialog
 import com.example.mylists.framework.ui.main.MainViewModel
-import com.example.mylists.framework.utils.notNull
+import com.example.mylists.framework.utils.logE
 import com.example.mylists.framework.utils.toFloatNotNull
 import org.koin.androidx.compose.koinViewModel
-
-val itemInputs = mutableListOf<ItemFieldAddProd>()
 
 @Composable
 fun AddProductFrag(
     viewModel: AddNewProductViewModel = koinViewModel(),
     mainViewModel: MainViewModel = koinViewModel(),
-    returnDest: (destination: String) -> Unit,
-    readBarCode: () -> Unit
+    productBarCode: Product? = null,
+    categoryState: String? = null,
+    returnDest: (destination: String) -> Unit
 ) {
 
     var showDialog by remember { mutableStateOf(
@@ -87,29 +84,8 @@ fun AddProductFrag(
 
     val brandList by viewModel.brandList.collectAsState(listOf())
 
-    if (itemInputs.isEmpty()) {
-        itemInputs.addAll(
-            mutableListOf(
-                ItemFieldAddProd(
-                    label = "Descrição"
-                ),
-                ItemFieldAddProd(
-                    label = "Marca"
-                ),
-                ItemFieldAddProd(
-                    label = "Categoria"
-                ),
-                ItemFieldAddProd(
-                    label = "Código de Barra",
-                    keyboardType = KeyboardType.Number
-                ),
-                ItemFieldAddProd(
-                    label = "Preço",
-                    keyboardType = KeyboardType.Number
-                )
-            )
-        )
-    }
+    logE("productState $productBarCode")
+    logE("categoryList $productBarCode ${categoryList.find { it.idCategory == productBarCode?.idCategoryFK }?.nameCategory}")
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -129,19 +105,48 @@ fun AddProductFrag(
                 )
             )
 
-            itemInputs.forEach { itemField ->
-                OutlinedEditText(
-                    label = itemField.label,
-                    keyboardType = itemField.keyboardType,
-                    suggestions = when (itemField.label) {
-                        "Categoria" -> categoryList.map { it.nameCategory }
-                        "Marca" -> brandList
-                        else -> listOf()
-                    }
-                ) { text ->
-                    itemField.textEdit = text
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+            var textDescription by remember { mutableStateOf(productBarCode?.description ?: "") }
+            OutlinedEditText(
+                label = "Descrição",
+                textValue = textDescription,
+            ) { text ->
+                textDescription = text
+            }
+
+            var textBrand by remember { mutableStateOf(productBarCode?.brandProduct ?: "") }
+            OutlinedEditText(
+                label = "Marca",
+                textValue = textBrand,
+                suggestions = brandList
+            ) { text ->
+                textBrand = text
+            }
+
+            var textCategory by remember { mutableStateOf(categoryState ?: "") }
+            OutlinedEditText(
+                label = "Categoria",
+                textValue = textCategory,
+                suggestions = categoryList.map { it.nameCategory }
+            ) { text ->
+                textCategory = text
+            }
+
+            var textBarCode by remember { mutableStateOf(productBarCode?.ean ?: "") }
+            OutlinedEditText(
+                label = "Código de Barra",
+                textValue = textBarCode,
+                keyboardType = KeyboardType.Number
+            ) { text ->
+                textBarCode = text
+            }
+
+            var textPrice by remember { mutableStateOf("${productBarCode?.price ?: ""}") }
+            OutlinedEditText(
+                label = "Preço",
+                textValue = textPrice,
+                keyboardType = KeyboardType.Number
+            ) { text ->
+                textPrice = text
             }
 
             Row(
@@ -173,41 +178,67 @@ fun AddProductFrag(
                 }
             }
 
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (itemInputs.none { it.textEdit.isBlank() }) {
-                        isLoading = true
-                        viewModel.consultCategory(
-                            findItem("Categoria").notNull()
-                        ) { category ->
-                            if (category != null) {
-                                val product = Product(
-                                    description = findItem("Descrição").notNull(),
-                                    brandProduct = findItem("Marca").notNull(),
-                                    idCategoryFK = category.idCategory,
-                                    price = findItem("Preço").toFloatNotNull()
-                                )
-                                viewModel.insertProduct(product = product, if (checkedState) quantityShopping else "") {
-                                    if (it) {
-                                        if (checkedState) {
-                                            mainViewModel.setNavigation(title = NavigationScreen.SHOPPING.label)
-                                            returnDest(NavigationScreen.SHOPPING.label)
+            Row(modifier = Modifier.align(Alignment.End)) {
+                Button(
+                    onClick = {
+                        textDescription = ""
+                        textCategory = ""
+                        textBarCode = ""
+                        textBrand = ""
+                        textPrice = ""
+                        returnDest("")
+                    }
+                ) {
+                    Text(text = "Limpar")
+                }
+
+                Button(
+                    onClick = {
+                        if (
+                            textDescription.isNotBlank() &&
+                            textBrand.isNotBlank() &&
+                            textBarCode.isNotBlank() &&
+                            textCategory.isNotBlank() &&
+                            textPrice.isNotBlank()
+                        ) {
+                            isLoading = true
+                            viewModel.consultCategory(textCategory) { category ->
+                                if (category != null) {
+                                    val product = Product(
+                                        idProduct = productBarCode?.idProduct ?: 0,
+                                        description = textDescription,
+                                        brandProduct = textBrand,
+                                        idCategoryFK = category.idCategory,
+                                        ean = textBarCode,
+                                        price = textPrice.toFloatNotNull()
+                                    )
+                                    viewModel.insertProduct(product = product, if (checkedState) quantityShopping else "") {
+                                        if (it) {
+                                            if (checkedState) {
+                                                mainViewModel.setNavigation(title = NavigationScreen.SHOPPING.label)
+                                                returnDest(NavigationScreen.SHOPPING.label)
+                                            }
+                                            else {
+                                                mainViewModel.setNavigation(title = NavigationScreen.PRODUCTS.label)
+                                                returnDest(NavigationScreen.PRODUCTS.label)
+                                            }
+                                            textDescription = ""
+                                            textBrand = ""
+                                            textBarCode = ""
+                                            textCategory = ""
+                                            textPrice = ""
+                                        } else {
+                                            showDialog = DialogArgs("Error", "Produto não salvo!",true)
                                         }
-                                        else {
-                                            mainViewModel.setNavigation(title = NavigationScreen.PRODUCTS.label)
-                                            returnDest(NavigationScreen.PRODUCTS.label)
-                                        }
-                                    } else {
-                                        showDialog = DialogArgs("Error", "Produto não salvo!",true)
                                     }
                                 }
+                                isLoading = false
                             }
-                            isLoading = false
-                        }
-                    } else showDialog = DialogArgs("Error", "Existe Campo vazio!",true)
-                },
-            ) {
-                Text(text = "Adicionar")
+                        } else showDialog = DialogArgs("Error", "Existe Campo vazio!",true)
+                    },
+                ) {
+                    Text(text = "Adicionar")
+                }
             }
         }
     }
@@ -217,11 +248,12 @@ fun AddProductFrag(
 @Composable
 fun OutlinedEditText(
     label: String,
+    textValue: String = "",
     keyboardType: KeyboardType = KeyboardType.Text,
     suggestions: List<String> = emptyList(),
     returnText: (text: String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(textValue) }
     var isError by remember { mutableStateOf(false) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -237,7 +269,6 @@ fun OutlinedEditText(
             },
             label =  {
                 Text(label)
-                if (label == "Código de Barra") Icon(imageVector = Icons.Outlined.EventNote, contentDescription = "")
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done,
@@ -272,10 +303,7 @@ fun OutlinedEditText(
             modifier = Modifier.fillMaxWidth(),
         )
     }
-}
-
-fun findItem(value: String): String? {
-    return itemInputs.find { it.label == value }?.textEdit
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 @Composable
@@ -322,5 +350,5 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun AddProductFragPreview() {
-    AddProductFrag( returnDest = {}, readBarCode = {})
+    AddProductFrag( returnDest = {})
 }

@@ -6,12 +6,18 @@ import com.example.mylists.data.local.dao.CategoryDao
 import com.example.mylists.data.local.dao.ItemShoppingDao
 import com.example.mylists.data.local.dao.ProductDao
 import com.example.mylists.data.remote.BarCodeRetrofitApi
+import com.example.mylists.data.remote.request.RequestFiltroProductJSL
+import com.example.mylists.data.remote.request.RequestLoadProductJSL
+import com.example.mylists.data.remote.request.RequestProductAndEanJSL
 import com.example.mylists.domain.model.Category
 import com.example.mylists.domain.model.ItemShopping
 import com.example.mylists.domain.model.Product
 import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.domain.repository.ShoppingRepository
+import com.example.mylists.framework.utils.capitalizeDescription
 import com.example.mylists.framework.utils.logE
+import com.example.mylists.framework.utils.toFloatNotNull
+import com.example.mylists.state.StateProductBarCode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import retrofit2.awaitResponse
@@ -78,28 +84,72 @@ class ShoppingRepositoryImp(
     }
 
 
-    override suspend fun getProductInBarCode(barcode: String): List<ProductOnItemShopping> {
+    override suspend fun getProductInBarCode(barcode: String, company: Int): StateProductBarCode {
         return try {
-            val productOnItemShopping = productDao.listAllProductOnItemShopping(barcode)
+            val product = productDao.getProductBarCode(barcode.trim())
 
-            productOnItemShopping.ifEmpty {
+            if (product != null) {
+                val itemShopping = itemShoppingDao.consultItemShopping(product.idProduct)
+                if (itemShopping != null) {
+                    itemShopping.quantity ++
+                    itemShoppingDao.update(itemShopping)
+                } else itemShoppingDao.insert(
+                    ItemShopping(
+                        idProductFK = product.idProduct,
+                        quantity = 1,
+                        selected = true
+                    )
+                )
+                StateProductBarCode.SuccessRoom()
+            } else {
+                val request =  listOf(
+                    RequestLoadProductJSL(
+                        empresa_id = company,
+                        filtro = listOf(
+                            RequestFiltroProductJSL(
+                                produto = RequestProductAndEanJSL(
+                                    ean = barcode,
+                                    descricao_produto = barcode
+                                )
+                            )
+                        )
+                    )
+                )
+
                 val response =
-                    BarCodeRetrofitApi.getService().getProductBarCode(barcode, "").awaitResponse()
+                    BarCodeRetrofitApi.getService().getProductBarCodeJSL(request).awaitResponse()
 
-                val resp = response.body()
-                logE("ErroBarCode response $response")
-                logE("ErroBarCode resp $resp")
+                val resp = response.body()?.firstOrNull()
+                logE("BarCode2 response $response")
+                logE("BarCode3 resp $resp")
 
-                if (response.isSuccessful && resp != null) {
-                    resp
-                    emptyList()
-                } else {
-                    emptyList()
-                }
+                if (resp?.status == true) {
+                    val productResponse = resp.produto
+                    if (productResponse.isEmpty() && company == 2) getProductInBarCode(barcode, 4)
+                    else {
+                        val firstProduct = productResponse.firstOrNull()
+                        if (firstProduct != null) {
+                            val descriptionCategory = firstProduct.group.descricao.capitalizeDescription()
+                            if (categoryDao.consultCategory(descriptionCategory) == null) categoryDao.insert(
+                                Category(nameCategory = descriptionCategory)
+                            )
+                            val category = categoryDao.consultCategory(descriptionCategory)
+                            val productInService = Product(
+                                description = firstProduct.descricao.capitalizeDescription(),
+                                imgProduct = firstProduct.galeria_produto_medium.first(),
+                                brandProduct = firstProduct.descMarca.capitalizeDescription(),
+                                idCategoryFK = category?.idCategory ?: 0,
+                                ean = firstProduct.codigobarra,
+                                price = firstProduct.tabelaDePreco.firstOrNull()?.valor_tabela_preco.toFloatNotNull()
+                            )
+                            StateProductBarCode.SuccessService(productInService, category?.nameCategory ?: "")
+                        } else StateProductBarCode.Error(info = "Produto com Ean: $barcode não encontrado!", code = response.code())
+                    }
+                } else StateProductBarCode.Error(info = "Error, não deu para buscar o produto!", code = response.code())
             }
         } catch (e: Exception) {
             logE("ErroBarCode $e")
-            emptyList()
+            StateProductBarCode.Error("Erro desconhecido")
         }
     }
 
@@ -236,7 +286,7 @@ class ShoppingRepositoryImp(
                 description = "Batata Chips 100g",
                 imgProduct = "url_batata_chips.png",
                 brandProduct = "Ruffles",
-                idCategoryFK = 7, // Suponhamos que a categoria "Snacks" tenha id 8
+                idCategoryFK = 7, // Suponhamos que a categoria "Snacks" tenha id 7
                 ean = "7890123456789",
                 price = 3.99f
             ),
@@ -244,7 +294,7 @@ class ShoppingRepositoryImp(
                 description = "Creme de Avelã 200g",
                 imgProduct = "url_creme_avela.png",
                 brandProduct = "Nutella",
-                idCategoryFK = 8, // Suponhamos que a categoria "Doces" tenha id 9
+                idCategoryFK = 8, // Suponhamos que a categoria "Doces" tenha id 8
                 ean = "8901234567890",
                 price = 10.59f
             ),
@@ -252,7 +302,7 @@ class ShoppingRepositoryImp(
                 description = "Espaguete 500g",
                 imgProduct = "url_espaguete.png",
                 brandProduct = "Barilla",
-                idCategoryFK = 9, // Suponhamos que a categoria "Massas" tenha id 10
+                idCategoryFK = 9, // Suponhamos que a categoria "Massas" tenha id 9
                 ean = "9012345678901",
                 price = 2.29f
             ),

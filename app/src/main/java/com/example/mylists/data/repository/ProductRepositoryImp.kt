@@ -16,8 +16,10 @@ class ProductRepositoryImp(
     private val itemShoppingDao: ItemShoppingDao
 ): ProductRepository {
 
-    override fun insertProduct(product: Product): Long{
-        return productDao.insert(product)
+    override fun insertProduct(product: Product): Long {
+        return if (productDao.update(product) == 0)
+            productDao.insert(product)
+        else 0L
     }
 
     override fun productList(): Flow<List<ProductOnItemShopping>> {

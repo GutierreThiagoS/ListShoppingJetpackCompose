@@ -13,6 +13,6 @@ data class ToDoItem(
     val dateFinal: String,
     val level: Int,
     val alert: Boolean,
-    val concluded: Boolean,
-    val deleted: Boolean,
+    val concluded: Boolean = false,
+    val deleted: Boolean = false,
 )

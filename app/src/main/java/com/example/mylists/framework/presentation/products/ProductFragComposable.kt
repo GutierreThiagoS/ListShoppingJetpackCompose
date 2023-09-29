@@ -4,16 +4,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.framework.composable.CategoryInProductsLayout
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProductsFrag(
-    viewModel: ProductViewModel = koinViewModel()
+    viewModel: ProductViewModel = koinViewModel(),
+    editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
     val productListState by viewModel.productListState.collectAsState(listOf())
     
     if (productListState.isNotEmpty()) {
-        CategoryInProductsLayout(products = productListState)
+        CategoryInProductsLayout(
+            products = productListState,
+            editProductClick = editProductClick
+        )
     } else Text(text = "Não há Produto!")
 }

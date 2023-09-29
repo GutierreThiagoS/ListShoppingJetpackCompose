@@ -36,6 +36,12 @@ interface ProductDao {
     """)
     fun getProduct(description: String): Product?
 
+    @Query("""
+        SELECT * FROM Product 
+        WHERE ean = :barcode
+    """)
+    fun getProductBarCode(barcode: String): Product?
+
     @Query("SELECT * FROM Product WHERE idProduct = :id")
     fun getProduct(id: Int): Product?
 

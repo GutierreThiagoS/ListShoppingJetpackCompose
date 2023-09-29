@@ -14,17 +14,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mylists.R
+import com.example.mylists.domain.model.ProductOnItemShopping
 import com.example.mylists.framework.composable.CategoryInProductsLayout
 import com.example.mylists.framework.ui.theme.MyListsTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ShoppingFrag(viewModel: ShoppingViewModel = koinViewModel()) {
+fun ShoppingFrag(
+    viewModel: ShoppingViewModel = koinViewModel(),
+    editProductClick: (product: ProductOnItemShopping) -> Unit
+) {
 
     val productOnShoppingState by viewModel.productOnShoppingState.collectAsState(initial = listOf())
 
     if (productOnShoppingState.isNotEmpty()) {
-        CategoryInProductsLayout(products = productOnShoppingState, isVisibleCheck = true)
+        CategoryInProductsLayout(
+            products = productOnShoppingState,
+            isVisibleCheck = true,
+            editProductClick = editProductClick
+        )
     } else {
         Surface {
             Box(
@@ -46,6 +54,6 @@ fun ShoppingFrag(viewModel: ShoppingViewModel = koinViewModel()) {
 @Composable
 fun ShoppingPreview() {
     MyListsTheme {
-        ShoppingFrag()
+        ShoppingFrag {}
     }
 }

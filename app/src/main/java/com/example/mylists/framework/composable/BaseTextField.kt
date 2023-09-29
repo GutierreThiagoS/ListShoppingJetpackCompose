@@ -1,9 +1,12 @@
 package com.example.mylists.framework.composable
 
+import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -14,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -34,8 +39,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.mylists.framework.ui.theme.GrayLight
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +90,7 @@ fun AutocompleteOutlinedTextField(
             .onFocusChanged { focusState ->
                 isDropdownVisible = focusState.isFocused
                 isFocused = focusState.isFocused
-        },
+            },
         trailingIcon = if (isDropdownVisible) {
             {
                 IconButton(onClick = { isDropdownVisible = false }) {
@@ -121,3 +135,159 @@ fun AutocompleteOutlinedTextField(
         }
     }
 }
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun DateSelector(
+    resultDate: (value: TextFieldValue) -> Unit
+) {
+
+    var selectedDate by remember { mutableStateOf<Date?>(Date()) }
+
+    val activity = LocalView.current.context as AppCompatActivity
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+    val dateText = selectedDate?.let { dateFormat.format(it) } ?: "Selecione a data"
+
+    var text by remember { mutableStateOf(TextFieldValue(dateText)) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .weight(5f)
+                .clickable {
+                    getDataPicker(
+                        activity,
+                        selectedDate
+                    ) { resultDate ->
+                        selectedDate = resultDate
+                        if (resultDate != null) {
+                            text = TextFieldValue(dateFormat.format(resultDate))
+                            resultDate(text)
+                        }
+                        keyboardController?.hide()
+                    }
+                },
+            value = text,
+            onValueChange = {
+                val formatDate = formatDateNumber(it.text)
+                text = TextFieldValue(text = formatDate, selection = TextRange(formatDate.length))
+                resultDate(text)
+            },
+            label = { Text("Prazo Final") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            )
+        )
+
+        IconButton(
+            modifier = Modifier
+                .weight(1f),
+            onClick = {
+                getDataPicker(
+                    activity,
+                    selectedDate
+                ) { resultDate ->
+                    selectedDate = resultDate
+                    if (resultDate != null) {
+                        text = TextFieldValue(dateFormat.format(resultDate))
+                        resultDate(text)
+                    }
+                    keyboardController?.hide()
+                }
+            }
+        ) {
+            Icon(imageVector = Icons.Outlined.EditCalendar, contentDescription = "CalendarToday")
+        }
+    }
+}
+
+fun getDataPicker(
+    activity: AppCompatActivity,
+    selectedDate: Date?,
+    returnDate: (date: Date?) -> Unit
+) {
+    val date = selectedDate ?: Date()
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+
+    val datePicker = MaterialDatePicker.Builder.datePicker()
+        .setSelection(calendar.timeInMillis)
+        .build()
+
+    datePicker.addOnPositiveButtonClickListener { selectedDateMillis ->
+        returnDate(Date(selectedDateMillis + 50000000L))
+    }
+
+    datePicker.show(activity.supportFragmentManager, datePicker.toString())
+}
+
+private fun formatDateNumber(input: String): String {
+
+    val cleanInput = input.replace(Regex("[^0-9]"), "")
+    val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val timerFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+    val date = Date()
+
+    return buildString {
+        Log.e("buildString", this.toString())
+
+        val day = cleanInput.substring(0, if (cleanInput.length >= 2) 2 else cleanInput.length)
+
+        if (cleanInput.length <= 2) {
+            append(getDayInMoth(day, "12"))
+        } else {
+            val moth = cleanInput.substring(2,  if (cleanInput.length >= 4) 4 else cleanInput.length)
+            val mothReal = if ((moth.toIntNotNull()) > 12) "12" else if (moth == "00") "01" else moth
+            append(getDayInMoth(day, mothReal))
+            append("/")
+            append(mothReal)
+        }
+        if (cleanInput.length > 4) {
+            append("/")
+            val yearMoment = yearFormat.format(date)
+            val year = cleanInput.substring(4, if (cleanInput.length >= 8) 8 else cleanInput.length)
+            append(if (year.length == 4 && year.toIntNotNull() < yearMoment.toIntNotNull()) yearMoment else year)
+        }
+    }.let {
+        val calender = Calendar.getInstance()
+        calender.time = date
+        val form = timerFormat.format(calender.time)
+        Log.e("form", "$form  ")
+
+        if (it.length >= 10) {
+            val dateParse = dateFormat.parse(it)
+            val form2 = if (dateParse != null) timerFormat.format(dateParse) else it //to yyyyMMdd
+            Log.e("form2", "$form2  ")
+            Log.e("calender", "${calender.time.time} dateParse ${dateParse?.time} ")
+            if (dateParse != null && date.time < dateParse.time) {
+                dateFormat.format(dateParse)
+            } else dateFormat.format(calender.time)
+        } else it
+    }
+}
+
+private fun getDayInMoth(day: String, moth: String): String {
+    return if(moth.toIntOrNull() == 2 && day.toIntNotNull() > 29) {
+        "29"
+    } else if (listOf(1, 3, 5, 7, 8, 10, 12).contains(moth.toIntNotNull())  && day.toIntNotNull() > 31) {
+        "31"
+    } else if (listOf(4, 6, 9, 11).contains(moth.toIntNotNull()) && day.toIntNotNull() > 30) {
+        "30"
+    } else if (day == "00") "01"
+    else day
+}
+
+fun String.toIntNotNull() = toIntOrNull() ?: 0

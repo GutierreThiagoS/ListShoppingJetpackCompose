@@ -47,5 +47,4 @@ val viewModelModule = module {
         )
     }
 
-    /*viewModel { SettingViewModel() }*/
 }

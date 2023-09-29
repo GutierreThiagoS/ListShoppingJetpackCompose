@@ -3,24 +3,25 @@ package com.example.mylists.framework.ui.main
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.mylists.framework.composable.ToolbarAppBar
 import com.example.mylists.framework.ui.theme.MyListsTheme
-import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import org.koin.android.ext.android.inject
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val viewModel by inject<MainViewModel>()
 
     private fun readBarCode() {
         val scanOptions = ScanOptions()
-        scanOptions.captureActivity = CaptureActivity::class.java
-        scanOptions.setOrientationLocked(true)
+        scanOptions.captureActivity = CaptureCodeBar::class.java
+        scanOptions.setOrientationLocked(false)
         scanOptions.setBeepEnabled(true)
         scanOptions.setBarcodeImageEnabled(false)
         scanOptions.setCameraId(0)
@@ -43,8 +44,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyListsTheme {
-                ToolbarAppBar {
-                    readBarCode()
+                val barCodeState by viewModel.barCodeState.collectAsState()
+                ToolbarAppBar(
+                    barCodeState
+                ) {
+                    viewModel.setBarCode(null)
+                    if (it) readBarCode()
                 }
             }
         }
