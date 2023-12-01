@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +46,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.mylists.framework.ui.theme.GrayLight
+import com.example.mylists.framework.utils.logE
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -139,12 +143,12 @@ fun AutocompleteOutlinedTextField(
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DateSelector(
+    toDoItemDateFinal: String?,
+    activity: AppCompatActivity,
     resultDate: (value: TextFieldValue) -> Unit
 ) {
 
     var selectedDate by remember { mutableStateOf<Date?>(Date()) }
-
-    val activity = LocalView.current.context as AppCompatActivity
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -152,7 +156,9 @@ fun DateSelector(
 
     val dateText = selectedDate?.let { dateFormat.format(it) } ?: "Selecione a data"
 
-    var text by remember { mutableStateOf(TextFieldValue(dateText)) }
+    var text by remember { mutableStateOf(TextFieldValue(toDoItemDateFinal ?: dateText)) }
+
+    resultDate(text)
 
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -280,9 +286,9 @@ private fun formatDateNumber(input: String): String {
 }
 
 private fun getDayInMoth(day: String, moth: String): String {
-    return if(moth.toIntOrNull() == 2 && day.toIntNotNull() > 29) {
+    return if (moth.toIntOrNull() == 2 && day.toIntNotNull() > 29) {
         "29"
-    } else if (listOf(1, 3, 5, 7, 8, 10, 12).contains(moth.toIntNotNull())  && day.toIntNotNull() > 31) {
+    } else if (listOf(1, 3, 5, 7, 8, 10, 12).contains(moth.toIntNotNull()) && day.toIntNotNull() > 31) {
         "31"
     } else if (listOf(4, 6, 9, 11).contains(moth.toIntNotNull()) && day.toIntNotNull() > 30) {
         "30"
@@ -290,4 +296,135 @@ private fun getDayInMoth(day: String, moth: String): String {
     else day
 }
 
-fun String.toIntNotNull() = toIntOrNull() ?: 0
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun HourSelectorAlert(
+    toDoItemHourInitAlert: String?,
+    activity: AppCompatActivity,
+    resultHour: (value: TextFieldValue) -> Unit
+) {
+
+    var selectedDate by remember { mutableStateOf<Date?>(Date()) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+    val dateText = selectedDate?.let { dateFormat.format(it) } ?: "Selecione a data"
+
+    var text by remember { mutableStateOf(TextFieldValue(toDoItemHourInitAlert ?: dateText)) }
+
+    resultHour(text)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .weight(5f)
+                .clickable {
+                    getHourPicker(
+                        dateText,
+                        activity,
+                    ) { resultDate ->
+                        selectedDate = dateFormat.parse(resultDate)
+                        selectedDate?.let {
+                            text = TextFieldValue(dateFormat.format(it))
+                            resultHour(text)
+                        }
+                        keyboardController?.hide()
+                    }
+                },
+            value = text,
+            onValueChange = {
+                val formatDate = formatHourNumber(it.text)
+                text = TextFieldValue(text = formatDate, selection = TextRange(formatDate.length))
+                resultHour(it)
+            },
+            label = { Text("Hora Alarme") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            )
+        )
+
+        IconButton(
+            modifier = Modifier
+                .weight(1f),
+            onClick = {
+                getHourPicker(
+                    dateText,
+                    activity,
+                ) { resultDate ->
+                    selectedDate = dateFormat.parse(resultDate)
+                    selectedDate?.let {
+                        text = TextFieldValue(dateFormat.format(it))
+                        resultHour(text)
+                    }
+                    keyboardController?.hide()
+                }
+            }
+        ) {
+            Icon(imageVector = Icons.Outlined.AccessTime, contentDescription = "AccessTime")
+        }
+    }
+}
+
+fun getHourPicker(
+    dateText: String,
+    activity: AppCompatActivity,
+    returnDate: (String) -> Unit
+) {
+
+    val datePicker = MaterialTimePicker.Builder()
+        .setTimeFormat(TimeFormat.CLOCK_24H)
+        .setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK)
+        .setHour(dateText.split(":").firstOrNull()?.toIntOrNull() ?: 12)
+        .setMinute(dateText.split(":").lastOrNull()?.toIntOrNull() ?: 0)
+        .setTitleText("Selecione a Hora")
+        .build()
+
+    datePicker.addOnPositiveButtonClickListener {
+        val hour = datePicker.hour
+        val minute = datePicker.minute
+        Log.e("MyActivity", "Selected time: $hour:$minute")
+        returnDate("$hour:$minute")
+    }
+
+    datePicker.show(activity.supportFragmentManager, datePicker.toString())
+}
+private fun formatHourNumber(input: String): String {
+
+    val cleanInput = input.replace(Regex("[^0-9]"), "")
+
+    return buildString {
+        Log.e("buildString", this.toString())
+        if (cleanInput.length >= 2) {
+            val hour = cleanInput.substring(0, 2)
+            append(if (hour.toIntNotNull() < 24) hour else "00")
+            if (cleanInput.length >= 3) append(":")
+            if (cleanInput.length >= 4) {
+                val minutes = cleanInput.substring(2, 4)
+                append(if (minutes.toIntNotNull() < 60) minutes else "00")
+            } else append(cleanInput.substring(2, cleanInput.length))
+        } else append(input)
+    }
+}
+
+fun String?.toIntNotNull(): Int {
+    return try {
+        when {
+            this == null -> 0
+            isBlank() -> 0
+            else -> toInt()
+        }
+    } catch (e: Exception) {
+        logE("toIntNotNull $e")
+        0
+    }
+}

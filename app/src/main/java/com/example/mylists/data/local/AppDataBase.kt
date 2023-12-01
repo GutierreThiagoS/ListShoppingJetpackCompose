@@ -16,7 +16,7 @@ import com.example.mylists.domain.model.ToDoItem
     Category::class,
     ItemShopping::class,
     ToDoItem::class,
-                     ], version = 2)
+                     ], version = 4)
 abstract class AppDataBase :RoomDatabase() {
     abstract fun getProductDao(): ProductDao
     abstract fun getCategoryDao(): CategoryDao

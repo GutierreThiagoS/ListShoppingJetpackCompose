@@ -1,5 +1,8 @@
 package com.example.mylists.framework.presentation.add_to_do
 
+import android.widget.Toast
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,23 +28,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.example.mylists.domain.model.ToDoItem
 import com.example.mylists.framework.composable.DateSelector
+import com.example.mylists.framework.composable.HourSelectorAlert
 import com.example.mylists.framework.presentation.add.OutlinedEditText
 import com.example.mylists.framework.presentation.to_do.ToDoViewModel
+import com.example.mylists.framework.ui.main.MainViewModel
 import com.example.mylists.framework.utils.dateFormat
+import com.example.mylists.framework.utils.hourFormat
+import com.example.mylists.framework.utils.logE
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddToDoList(viewModel: ToDoViewModel = koinViewModel()) {
+fun AddToDoList(
+    toDoItem: ToDoItem?,
+    mainViewModel: MainViewModel,
+    viewModel: ToDoViewModel = koinViewModel()
+) {
 
-    var titleValue by rememberSaveable { mutableStateOf("") }
-    var descriptionValue by rememberSaveable { mutableStateOf("") }
-    var dateFinalValue by remember { mutableStateOf(TextFieldValue()) }
-    val (checkedState, onStateChange) = remember { mutableStateOf(true) }
+    var titleValue by rememberSaveable { mutableStateOf(toDoItem?.title ?: "") }
+
+    var descriptionValue by rememberSaveable { mutableStateOf(toDoItem?.description ?: "") }
+
+    var dateFinalValue by remember { mutableStateOf(TextFieldValue(toDoItem?.dateFinal ?: "")) }
+
+    var hourAlertValue by remember { mutableStateOf(TextFieldValue(toDoItem?.hourInitAlert ?: "")) }
+
+    val (checkedState, onStateChange) = remember { mutableStateOf(toDoItem?.alert ?: true) }
+
+    val activity = LocalView.current.context as AppCompatActivity
+    val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -56,7 +77,7 @@ fun AddToDoList(viewModel: ToDoViewModel = koinViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 20.dp),
-                text = "Registrar Tarefa!",
+                text = "${if (toDoItem != null) "Editar" else "Registrar"} Tarefa!",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Bold
                 )
@@ -78,8 +99,20 @@ fun AddToDoList(viewModel: ToDoViewModel = koinViewModel()) {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            DateSelector {
+            DateSelector(
+                toDoItem?.dateFinal,
+                activity = activity
+            ) {
                 dateFinalValue = it
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            HourSelectorAlert(
+                toDoItem?.hourInitAlert,
+                activity = activity
+            ) {
+                hourAlertValue = it
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -114,10 +147,32 @@ fun AddToDoList(viewModel: ToDoViewModel = koinViewModel()) {
                         titleValue.isNotBlank() &&
                         descriptionValue.isNotBlank() &&
                         dateFinalValue.text.isNotBlank() &&
-                        dateFormat.parse(dateFinalValue.text) != null
+                        dateFormat.parse(dateFinalValue.text) != null &&
+                        hourAlertValue.text.isNotBlank() &&
+                        hourFormat.parse(hourAlertValue.text) != null
                     ) {
-        //                    viewModel.insertToDo()
-                    }
+                        viewModel.insertOrUpdateToDoItem(
+                            itemOld = toDoItem,
+                            title = titleValue,
+                            description = descriptionValue,
+                            dateFinal = dateFinalValue.text,
+                            hourAlertValue = hourAlertValue.text,
+                            isAlert = checkedState,
+                            returnError = {
+                                logE("Error insertToDo $it")
+                                Toast.makeText(
+                                    activity,
+                                    "Lembrete não Salvo!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                            returnSuccess = {
+                                logE("OK returnSuccess OK")
+                                mainViewModel.setToDoEdit(null)
+                                dispatcher?.onBackPressed()
+                            }
+                        )
+                    } else Toast.makeText(activity, "Algum campo está vázio!", Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {

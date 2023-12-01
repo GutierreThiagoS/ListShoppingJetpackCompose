@@ -16,7 +16,9 @@ import com.example.mylists.NavigationScreen
 import com.example.mylists.domain.model.BottomNavigationItem
 import com.example.mylists.domain.model.NavigationSelected
 import com.example.mylists.domain.model.Product
+import com.example.mylists.domain.model.ToDoItem
 import com.example.mylists.domain.repository.ShoppingRepository
+import com.example.mylists.domain.repository.ToDoRepository
 import com.example.mylists.state.StateProductBarCode
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel(
-    private val shoppingRepository: ShoppingRepository
+    private val shoppingRepository: ShoppingRepository,
+    private val toDoRepository: ToDoRepository
 ): ViewModel() {
 
     private val _navigationState = MutableStateFlow(NavigationSelected())
@@ -42,7 +45,18 @@ class MainViewModel(
     private val _categoryState = MutableStateFlow<String?>(null)
     val categoryState: StateFlow<String?> = _categoryState
 
+    private val _toDoState = MutableStateFlow<ToDoItem?>(null)
+    val toDoState : StateFlow<ToDoItem?> = _toDoState
+
     val total: Flow<Float?> = shoppingRepository.getTotal()
+
+    val toDoNotifications = toDoRepository.getToDoListFlowNotifications()
+
+    fun read(id: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            toDoRepository.read(id)
+        }
+    }
 
     val items = arrayListOf(
         BottomNavigationItem(
@@ -63,12 +77,6 @@ class MainViewModel(
             unselectedIcon = Icons.Outlined.EventNote,
             hasNews = false
         ),
-        /*BottomNavigationItem(
-            title = NavigationScreen.ADD.label,
-            selectedIcon = Icons.Filled.Add,
-            unselectedIcon = Icons.Outlined.Add,
-            hasNews = false
-        ),*/
         BottomNavigationItem(
             title = NavigationScreen.SETTINGS.label,
             selectedIcon = Icons.Filled.Settings,
@@ -120,6 +128,11 @@ class MainViewModel(
         if (_categoryState.value != null) _categoryState.value = null
         _productState.value = product
         _categoryState.value = categoryName
+    }
+
+    fun setToDoEdit(toDoItem: ToDoItem?) {
+        if (_toDoState.value != null) _toDoState.value = null
+        _toDoState.value = toDoItem
     }
 
 }

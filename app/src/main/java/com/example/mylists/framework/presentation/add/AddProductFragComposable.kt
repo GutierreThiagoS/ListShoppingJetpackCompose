@@ -38,7 +38,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mylists.NavigationScreen
 import com.example.mylists.R
@@ -55,7 +54,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AddProductFrag(
     viewModel: AddNewProductViewModel = koinViewModel(),
-    mainViewModel: MainViewModel = koinViewModel(),
+    mainViewModel: MainViewModel,
     productBarCode: Product? = null,
     categoryState: String? = null,
     returnDest: (destination: String) -> Unit
@@ -347,8 +346,9 @@ fun InsertQuantityShopping(returnText: (text: String) -> Unit) {
     }
 }
 
+/*
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun AddProductFragPreview() {
     AddProductFrag( returnDest = {})
-}
+}*/

@@ -43,7 +43,8 @@ val viewModelModule = module {
 
     viewModel {
         MainViewModel(
-            shoppingRepository = get()
+            shoppingRepository = get(),
+            toDoRepository = get()
         )
     }
 
