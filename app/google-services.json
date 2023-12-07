@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "873027138662",
+    "firebase_url": "https://lista-de-compras-b001f-default-rtdb.firebaseio.com",
+    "project_id": "lista-de-compras-b001f",
+    "storage_bucket": "lista-de-compras-b001f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873027138662:android:0205d032b732664d7ba9a7",
+        "android_client_info": {
+          "package_name": "com.gutierre.mylists"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "873027138662-k2f75974fou8jqsmsgto1o535gd70jhq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRGlffIh3zhu4z0Guvy6V9h54cQC7kVok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "873027138662-k2f75974fou8jqsmsgto1o535gd70jhq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

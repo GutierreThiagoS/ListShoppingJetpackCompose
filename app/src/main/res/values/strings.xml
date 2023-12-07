@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">MyLists</string>
+    <string name="app_name">Compras e Lembrentes</string>
+<!--    <string name="app_name">MyLists</string>-->
+    <string name="default_notification_channel_id">FCM Message</string>
+    <string name="msg_token_fmt">Tokne para Messagem -> %s</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_fire_base_product">FireBaseProductActivity</string>
 </resources>
