@@ -44,7 +44,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.gutierre.mylists.framework.ui.theme.GrayLight
+import com.gutierre.mylists.framework.ui.theme.LightGray
 import com.gutierre.mylists.framework.utils.logE
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -125,7 +125,7 @@ fun AutocompleteOutlinedTextField(
                             onValueChange(suggestion)
                             isDropdownVisible = false
                         }
-                        .background(if (i % 2 == 0) GrayLight else Color.White)
+                        .background(if (i % 2 == 0) LightGray else Color.White)
                         .padding(start = 16.dp, top = 6.dp, bottom = 6.dp)
                 )
             }

@@ -6,15 +6,17 @@ import androidx.lifecycle.viewModelScope
 import com.gutierre.mylists.domain.model.Category
 import com.gutierre.mylists.domain.model.ItemShopping
 import com.gutierre.mylists.domain.model.Product
+import com.gutierre.mylists.domain.repository.CategoryRepository
 import com.gutierre.mylists.domain.repository.ProductRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 
 class AddNewProductViewModel(
-    private val repository: ProductRepository
+    private val repository: ProductRepository,
+    private val repositoryCategory: CategoryRepository
 ): ViewModel() {
 
-    val categoryList: Flow<List<Category>> = repository.consultCategoryList()
+    val categoryList: Flow<List<Category>> = repositoryCategory.consultCategoryList()
 
     val brandList: Flow<List<String>> = repository.getAllBrand()
 
@@ -51,7 +53,7 @@ class AddNewProductViewModel(
     fun consultCategory(name: String, response: (category: Category?) -> Unit){
         viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ ->  }){
             Log.e("consultCategory", " $name")
-            val status = repository.consultCategory(name)
+            val status = repositoryCategory.consultCategory(name)
             withContext(Dispatchers.Main){
                 Log.e("consultCategory", " $status")
                 if (status == null) insertCategory(category = Category(0, name)) {
@@ -65,7 +67,7 @@ class AddNewProductViewModel(
     private fun insertCategory(category: Category, response: (category: Category?) -> Unit){
         viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ ->  }){
             Log.e("insertCategory", " $category")
-            val status = repository.insertCategory(category)
+            val status = repositoryCategory.insertCategory(category)
             withContext(Dispatchers.Main){
                 Log.e("insertCategory2", "status $status")
                 if (status > 0) consultCategory(category.nameCategory) {

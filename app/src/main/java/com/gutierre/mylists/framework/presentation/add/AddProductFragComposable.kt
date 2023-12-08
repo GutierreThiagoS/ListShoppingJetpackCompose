@@ -14,9 +14,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.twotone.CleaningServices
+import androidx.compose.material.icons.twotone.Save
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +36,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -54,10 +59,16 @@ import org.koin.androidx.compose.koinViewModel
 fun AddProductFrag(
     viewModel: AddNewProductViewModel = koinViewModel(),
     mainViewModel: MainViewModel,
-    productBarCode: Product? = null,
-    categoryState: String? = null,
     returnDest: (destination: String) -> Unit
 ) {
+
+    val barcode by mainViewModel.barCodeState.collectAsState()
+
+    val productState by mainViewModel.productState.collectAsState()
+
+    val categoryState by mainViewModel.categoryState.collectAsState()
+
+    logE("BarCoe  $barcode")
 
     var showDialog by remember { mutableStateOf(
         DialogArgs("Error", "Existe Campo vazio!")
@@ -79,11 +90,29 @@ fun AddProductFrag(
     val (checkedState, onStateChange) = remember { mutableStateOf(true) }
 
     val categoryList by viewModel.categoryList.collectAsState(listOf())
-
     val brandList by viewModel.brandList.collectAsState(listOf())
 
-    logE("productState $productBarCode")
-    logE("categoryList $productBarCode ${categoryList.find { it.idCategory == productBarCode?.idCategoryFK }?.nameCategory}")
+    var textDescription by remember { mutableStateOf("") }
+    var textBrand by remember { mutableStateOf("") }
+    var textCategory by remember { mutableStateOf(categoryState ?: "") }
+    var textBarCode by remember { mutableStateOf("") }
+    var textPrice by remember { mutableStateOf("") }
+
+    barcode?.let {
+        logE("BarCoezzzz  $it")
+        textBarCode = it
+    }
+
+    productState?.let {
+        logE("BarCoezzzz  $it")
+        textDescription = it.description
+        textBrand = it.brandProduct
+        textBarCode = it.ean
+        textPrice = "${it.price}"
+    }
+
+    logE("productState $productState")
+    logE("categoryList $productState ${categoryList.find { it.idCategory == productState?.idCategoryFK }?.nameCategory}")
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -103,7 +132,6 @@ fun AddProductFrag(
                 )
             )
 
-            var textDescription by remember { mutableStateOf(productBarCode?.description ?: "") }
             OutlinedEditText(
                 label = "Descrição",
                 textValue = textDescription,
@@ -111,7 +139,6 @@ fun AddProductFrag(
                 textDescription = text
             }
 
-            var textBrand by remember { mutableStateOf(productBarCode?.brandProduct ?: "") }
             OutlinedEditText(
                 label = "Marca",
                 textValue = textBrand,
@@ -120,7 +147,6 @@ fun AddProductFrag(
                 textBrand = text
             }
 
-            var textCategory by remember { mutableStateOf(categoryState ?: "") }
             OutlinedEditText(
                 label = "Categoria",
                 textValue = textCategory,
@@ -129,16 +155,23 @@ fun AddProductFrag(
                 textCategory = text
             }
 
-            var textBarCode by remember { mutableStateOf(productBarCode?.ean ?: "") }
-            OutlinedEditText(
-                label = "Código de Barra",
-                textValue = textBarCode,
-                keyboardType = KeyboardType.Number
-            ) { text ->
-                textBarCode = text
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedEditText(
+                    label = "Código de Barra",
+                    textValue = textBarCode,
+                    keyboardType = KeyboardType.Number,
+                    modifier = Modifier.weight(5f)
+                ) { text ->
+                    textBarCode = text
+                }
+                IconButton(
+                    modifier = Modifier.weight(1f),
+                    onClick = { mainViewModel.activeBarCode() }
+                ) {
+                    Icon(painter = painterResource(id = R.drawable.barcode_scanner), contentDescription = "Bar Code")
+                }
             }
 
-            var textPrice by remember { mutableStateOf("${productBarCode?.price ?: ""}") }
             OutlinedEditText(
                 label = "Preço",
                 textValue = textPrice,
@@ -177,7 +210,7 @@ fun AddProductFrag(
             }
 
             Row(modifier = Modifier.align(Alignment.End)) {
-                FilledTonalButton(
+                OutlinedButton(
                     onClick = {
                         textDescription = ""
                         textCategory = ""
@@ -187,10 +220,17 @@ fun AddProductFrag(
                         returnDest("")
                     }
                 ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.CleaningServices,
+                        contentDescription = "Save To Do"
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
                     Text(text = "Limpar")
                 }
 
-                FilledTonalButton(
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                OutlinedButton(
                     onClick = {
                         if (
                             textDescription.isNotBlank() &&
@@ -203,7 +243,7 @@ fun AddProductFrag(
                             viewModel.consultCategory(textCategory) { category ->
                                 if (category != null) {
                                     val product = Product(
-                                        idProduct = productBarCode?.idProduct ?: 0,
+                                        idProduct = productState?.idProduct ?: 0,
                                         description = textDescription,
                                         brandProduct = textBrand.ifBlank { "Não Definido" },
                                         idCategoryFK = category.idCategory,
@@ -236,6 +276,11 @@ fun AddProductFrag(
                         } else showDialog = DialogArgs("Error", "Existe Campo vazio!",true)
                     },
                 ) {
+                    Icon(
+                        imageVector = Icons.TwoTone.Save,
+                        contentDescription = "Save To Do"
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
                     Text(text = "Adicionar")
                 }
             }
@@ -253,18 +298,16 @@ fun OutlinedEditText(
     suggestions: List<String> = emptyList(),
     returnText: (text: String) -> Unit
 ) {
-    var text by remember { mutableStateOf(textValue) }
     var isError by remember { mutableStateOf(false) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
     if (suggestions.isNotEmpty())
         AutocompleteOutlinedTextField(
-            value = text,
+            value = textValue,
             suggestions = suggestions,
             onValueChange = { newText ->
-                isError = text.isNotBlank() && newText.isBlank()
-                text = newText
+                isError = textValue.isNotBlank() && newText.isBlank()
                 returnText(newText)
             },
             label =  {
@@ -283,10 +326,9 @@ fun OutlinedEditText(
         )
     else {
         OutlinedTextField(
-            value = text,
+            value = textValue,
             onValueChange = { newText ->
-                isError = text.isNotBlank() && newText.isBlank()
-                text = newText
+                isError = textValue.isNotBlank() && newText.isBlank()
                 returnText(newText)
             },
             label = { Text(label) },

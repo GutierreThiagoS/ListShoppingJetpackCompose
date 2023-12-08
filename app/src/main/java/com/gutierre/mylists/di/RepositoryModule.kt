@@ -1,9 +1,11 @@
 package com.gutierre.mylists.di
 
+import com.gutierre.mylists.data.repository.CategoryRepositoryImp
 import com.gutierre.mylists.data.repository.FireStoreRepositoryImp
 import com.gutierre.mylists.data.repository.ProductRepositoryImp
 import com.gutierre.mylists.data.repository.ShoppingRepositoryImp
 import com.gutierre.mylists.data.repository.ToDoRepositoryImp
+import com.gutierre.mylists.domain.repository.CategoryRepository
 import com.gutierre.mylists.domain.repository.FireStoreRepository
 import com.gutierre.mylists.domain.repository.ProductRepository
 import com.gutierre.mylists.domain.repository.ShoppingRepository
@@ -15,10 +17,16 @@ val repositoryModule = module {
     single {
         ProductRepositoryImp(
             productDao = get(),
-            categoryDao = get(),
             itemShoppingDao = get()
         )
     } bind ProductRepository::class
+
+    single {
+        CategoryRepositoryImp(
+            categoryDao = get(),
+            productDao = get()
+        )
+    } bind CategoryRepository::class
 
     single {
         ShoppingRepositoryImp(

@@ -27,7 +27,8 @@ val viewModelModule = module {
 
     viewModel {
         AddNewProductViewModel(
-            repository = get()
+            repository = get(),
+            repositoryCategory = get()
         )
     }
 

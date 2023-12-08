@@ -48,7 +48,7 @@ import com.gutierre.mylists.domain.model.ProductOnItemShopping
 import com.gutierre.mylists.framework.presentation.products.ProductViewModel
 import com.gutierre.mylists.framework.ui.theme.Bordor
 import com.gutierre.mylists.framework.ui.theme.Gray
-import com.gutierre.mylists.framework.ui.theme.GrayLight
+import com.gutierre.mylists.framework.ui.theme.LightGray
 import com.gutierre.mylists.framework.ui.theme.Teal700
 import com.gutierre.mylists.state.StateInfo
 import kotlinx.coroutines.delay
@@ -84,7 +84,7 @@ fun CategoryInProductsLayout(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(GrayLight)
+                            .background(LightGray)
                             .clickable { isProductDrop.value = isProductDrop.value.not() }
                             .padding(start = 16.dp, top = 6.dp, bottom = 6.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -231,12 +231,7 @@ fun ShoppingProductListItem(
                 }
         ) {
             Column(modifier = Modifier
-                .let {
-                    if (isVisibleCheck) it
-                        .padding(vertical = 16.dp)
-                        .padding(end = 16.dp)
-                    else it.padding(16.dp)
-                }
+                .padding(16.dp)
                 .fillMaxWidth()
             ) {
                 ActionButtonAmountTextField(

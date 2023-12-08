@@ -3,6 +3,7 @@ package com.gutierre.mylists.framework.ui.firebase
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,7 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.gutierre.mylists.framework.ui.theme.DarkGreen
 import com.gutierre.mylists.framework.ui.theme.MyListsTheme
 import com.gutierre.mylists.framework.ui.theme.TealBlack10
+import com.gutierre.mylists.framework.ui.theme.VeryLightGray
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,9 +90,9 @@ fun ProductsFireBase(
     ) { paddingValues ->
         Surface(
             Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding()),
-            color = Color.LightGray
+            color = VeryLightGray
         ) {
             LazyColumn(content = {
                 items(productList.value) { product ->

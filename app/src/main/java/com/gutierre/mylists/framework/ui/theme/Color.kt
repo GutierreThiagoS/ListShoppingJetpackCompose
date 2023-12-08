@@ -13,15 +13,16 @@ val Pink40 = Color(0xFF7D5260)*/
 val DarkGreen = Color(0xFF228822)
 
 val Teal10 = Color(0xFFEEFFFF)
-//val Teal30 = Color(0xFFCCFFEE)
-val Teal80 = Color(0xFF94FDD7)
+val Teal30 = Color(0xFFCCFFFF)
+//val Teal80 = Color(0xFF94FDD7)
 //val Teal200 = Color(0xFF03DAC5)
 val Teal700 = Color(0xFF018786)
 
 val TealBlack10 = Color(0xFF001122)
 val TealBlack200 = Color(0xFF94FDD7)
 val TealBlack700 = Color(0xFFB4FFEE)
-val GrayLight = Color(0xFFDDDDDD)
+val LightGray = Color(0xFFDDDDDD)
+val VeryLightGray = Color(0xFFEEEEEE)
 val Gray = Color(0xFFAAAAAA)
 
 /*val BlackBlue = Color(0xFF000055)
@@ -31,7 +32,7 @@ val White = Color(0xFFFFFFFF)*/
 
 val Navy = Color(0xFF073042)
 /*val Blue = Color(0xFF4285F4)*/
-val LightBlue = Color(0xFFD7EFFE)
+//val LightBlue = Color(0xFFD7EFFE)
 
 val BackgroundSpinner = Color(0x55000000)
 val Bordor = Color(0xFF550000)

@@ -35,6 +35,9 @@ class MainViewModel(
     private val _navigationState = MutableStateFlow(NavigationSelected())
     val navigationState: StateFlow<NavigationSelected> = _navigationState
 
+    private val _barCodeActive = MutableStateFlow<Int?>(null)
+    val barCodeActive: StateFlow<Int?> = _barCodeActive
+
     private val _barCodeState = MutableStateFlow<String?>(null)
     val barCodeState: StateFlow<String?> = _barCodeState
 
@@ -87,6 +90,14 @@ class MainViewModel(
     fun setNavigation(title: String, index: Int? = null) {
         _navigationState.value  =
             NavigationSelected(title, index ?: items.indexOf(items.find { it.title == title }))
+    }
+
+    fun activeBarCode() {
+        _barCodeActive.value  = (barCodeActive.value ?: 0) + 1
+    }
+
+    fun removeBarCode() {
+        _barCodeActive.value  = null
     }
 
     fun setBarCode(barCode: String?) {

@@ -11,8 +11,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,13 +40,12 @@ import org.koin.androidx.compose.koinViewModel
 fun ActionButtonAmountTextField(
     product: ProductOnItemShopping,
     isVisibleCheck : Boolean = false,
-    isEdit: Boolean = false,
     viewModel: ProductViewModel = koinViewModel()
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (isVisibleCheck && !isEdit) {
+        /*if (isVisibleCheck) {
             var checkedState by remember { mutableStateOf(product.selected) }
             Checkbox(
                 checked = checkedState,
@@ -57,7 +55,7 @@ fun ActionButtonAmountTextField(
                     viewModel.insertProductInShoppingList(product = product)
                 }
             )
-        }
+        }*/
 
         Column(
             modifier = Modifier
@@ -86,7 +84,7 @@ fun ActionButtonAmountTextField(
 
         var text by rememberSaveable { mutableStateOf("${product.quantity}") }
 
-        FloatingActionButtonItem(Icons.Outlined.Remove) {
+        FloatingActionButtonItem(if (isVisibleCheck && product.quantity <= 0) Icons.Outlined.Delete else Icons.Outlined.Remove) {
             if (product.quantity > 0) {
                 product.quantity--
                 text = product.quantity.toString()

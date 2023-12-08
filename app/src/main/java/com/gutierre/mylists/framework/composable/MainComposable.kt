@@ -38,16 +38,15 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun MainPreview() {
     MyListsTheme {
-//        ToolbarAppBar {}
+        val viewModel: MainViewModel = koinViewModel()
+        ToolbarAppBar(viewModel)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolbarAppBar(
-    barcode: String? = null,
-    viewModel: MainViewModel = koinViewModel(),
-    readBarCode: (read: Boolean) -> Unit
+    viewModel: MainViewModel
 ) {
 
     val navigationState by viewModel.navigationState.collectAsState()
@@ -113,7 +112,8 @@ fun ToolbarAppBar(
                             IconButton(
                                 modifier = Modifier.size(50.dp),
                                 onClick = {
-                                    readBarCode(true)
+                                    viewModel.activeBarCode()
+//                                    readBarCode(true)
                                 }
                             ) {
                                 Icon(
@@ -131,9 +131,10 @@ fun ToolbarAppBar(
             )
         },
         content = { innerPadding ->
+
             BottomMenu(
-                barcode = barcode,
-                contentPadding = innerPadding
+                contentPadding = innerPadding,
+                mainViewModel = viewModel
             )
         }
     )

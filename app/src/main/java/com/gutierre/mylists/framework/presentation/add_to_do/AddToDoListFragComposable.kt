@@ -12,15 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,13 +35,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.gutierre.mylists.domain.model.ToDoItem
 import com.gutierre.mylists.framework.composable.DateSelector
 import com.gutierre.mylists.framework.composable.HourSelectorAlert
 import com.gutierre.mylists.framework.presentation.add.OutlinedEditText
 import com.gutierre.mylists.framework.presentation.to_do.ToDoViewModel
 import com.gutierre.mylists.framework.ui.main.MainViewModel
-import com.gutierre.mylists.framework.ui.theme.Teal700
 import com.gutierre.mylists.framework.utils.dateFormat
 import com.gutierre.mylists.framework.utils.hourFormat
 import com.gutierre.mylists.framework.utils.logE
@@ -49,10 +47,11 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AddToDoList(
-    toDoItem: ToDoItem?,
     mainViewModel: MainViewModel,
     viewModel: ToDoViewModel = koinViewModel()
 ) {
+
+    val toDoItem by mainViewModel.toDoState.collectAsState()
 
     var titleValue by rememberSaveable { mutableStateOf(toDoItem?.title ?: "") }
 
@@ -159,7 +158,7 @@ fun AddToDoList(
                 )
             }
 
-            FilledTonalButton(
+            OutlinedButton(
                 onClick = {
                     if (
                         titleValue.isNotBlank() &&
@@ -192,18 +191,18 @@ fun AddToDoList(
                                 dispatcher?.onBackPressed()
                             }
                         )
-                    } else Toast.makeText(activity, "Algum campo está vázio!", Toast.LENGTH_SHORT)
-                        .show()
+                    } else Toast.makeText(
+                        activity, "Algum campo está vázio!", Toast.LENGTH_SHORT
+                    ).show()
                 },
-                modifier = Modifier.align(Alignment.End),
-                colors = ButtonDefaults.buttonColors(contentColor = Teal700)
+                modifier = Modifier.align(Alignment.End)
             ) {
                 Icon(
-                    modifier = Modifier.padding(end = 3.dp),
                     imageVector = Icons.Default.Save,
                     contentDescription = "Save To Do"
                 )
-                Text(text = "Adicionar", color = Color.White)
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(text = "Adicionar")
             }
         }
     }

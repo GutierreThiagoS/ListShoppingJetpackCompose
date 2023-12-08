@@ -38,7 +38,6 @@ import com.gutierre.mylists.App
 import com.gutierre.mylists.NavigationScreen
 import com.gutierre.mylists.domain.model.Product
 import com.gutierre.mylists.domain.model.ProductOnItemShopping
-import com.gutierre.mylists.domain.model.ToDoItem
 import com.gutierre.mylists.framework.presentation.add.AddProductFrag
 import com.gutierre.mylists.framework.presentation.add_to_do.AddToDoList
 import com.gutierre.mylists.framework.presentation.configuration.ConfigurationFrag
@@ -47,18 +46,17 @@ import com.gutierre.mylists.framework.presentation.shopping.ShoppingFrag
 import com.gutierre.mylists.framework.presentation.to_do.ToDoListFrag
 import com.gutierre.mylists.framework.ui.main.MainViewModel
 import com.gutierre.mylists.framework.ui.theme.Navy
-import com.gutierre.mylists.framework.ui.theme.Teal10
-import com.gutierre.mylists.framework.ui.theme.Teal80
+import com.gutierre.mylists.framework.ui.theme.Teal30
 import com.gutierre.mylists.framework.ui.theme.TealBlack700
-import org.koin.androidx.compose.koinViewModel
+import com.gutierre.mylists.framework.ui.theme.VeryLightGray
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun BottomMenu(
-    barcode: String?,
     contentPadding: PaddingValues,
-    mainViewModel: MainViewModel = koinViewModel()
+    mainViewModel: MainViewModel
 ) {
+    val barCodeState by mainViewModel.barCodeState.collectAsState()
 
     LaunchedEffect(mainViewModel){
         mainViewModel.checkProduct()
@@ -68,12 +66,8 @@ fun BottomMenu(
 
     val navController = rememberNavController()
 
-    val productState by mainViewModel.productState.collectAsState()
-    val categoryState by mainViewModel.categoryState.collectAsState()
-    val toDoState by mainViewModel.toDoState.collectAsState()
-
-    barcode?.let {
-        mainViewModel.getBarCodeInProduct(barcode) {
+    barCodeState?.let { barCode ->
+        mainViewModel.getBarCodeInProduct(barCode) {
             if (it.isBlank()) {
                 mainViewModel.setNavigation(NavigationScreen.ADD_PRODUCT.label)
                 navController.navigate(NavigationScreen.ADD_PRODUCT.label)
@@ -88,7 +82,7 @@ fun BottomMenu(
         Scaffold(
             bottomBar = {
                 NavigationBar(
-                    containerColor = Teal10
+                    containerColor = Color.White
                 ) {
                     mainViewModel.items.forEachIndexed { index, item ->
                         NavigationBarItem (
@@ -103,8 +97,8 @@ fun BottomMenu(
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = Color.Black,
                                 selectedTextColor = Color.Black,
-                                indicatorColor = Teal80,
-                                unselectedIconColor = Color.DarkGray,
+                                indicatorColor = Teal30,
+                                unselectedIconColor = Color.Gray,
                                 unselectedTextColor = Color.Gray
                                 ),
                             alwaysShowLabel = false,
@@ -135,7 +129,7 @@ fun BottomMenu(
                 }
             },
             contentColor = TealBlack700,
-            containerColor = Color.LightGray,
+            containerColor = VeryLightGray,
             floatingActionButton = {
                 if (navigationState.title == NavigationScreen.SHOPPING.label ||
                     navigationState.title == NavigationScreen.PRODUCTS.label ||
@@ -159,9 +153,6 @@ fun BottomMenu(
             Column(modifier = Modifier.padding(top = contentPadding.calculateTopPadding(), bottom = it.calculateBottomPadding())) {
                 NavHostApp(
                     navController = navController,
-                    productBarCode = productState,
-                    categoryState = categoryState,
-                    toDoState = toDoState,
                     mainViewModel = mainViewModel,
                     returnDest =  { destination ->
                         mainViewModel.setBarCode(null)
@@ -214,9 +205,6 @@ fun FloatingButton(onClick: () -> Unit) {
 @Composable
 fun NavHostApp(
     navController: NavHostController,
-    productBarCode: Product? = null,
-    categoryState: String? = null,
-    toDoState: ToDoItem? = null,
     mainViewModel: MainViewModel,
     returnDest: (destination: String) -> Unit,
     editProductClick: (product: ProductOnItemShopping) -> Unit
@@ -236,15 +224,12 @@ fun NavHostApp(
         }
         composable(NavigationScreen.ADD_PRODUCT.label) {
             AddProductFrag(
-                productBarCode = productBarCode,
-                categoryState = categoryState,
                 mainViewModel = mainViewModel,
                 returnDest = returnDest
             )
         }
         composable(NavigationScreen.ADD_TO_DO.label) {
             AddToDoList(
-                toDoItem = toDoState,
                 mainViewModel = mainViewModel,
             )
         }

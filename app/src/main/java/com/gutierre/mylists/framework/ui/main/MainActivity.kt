@@ -93,18 +93,21 @@ class MainActivity : AppCompatActivity() {
 
                 val toDoNotifications by viewModel.toDoNotifications.collectAsState(initial = listOf())
 
+                val barCodeActive by viewModel.barCodeActive.collectAsState()
+
                 toDoNotifications.forEach { item ->
                     getAlertManager(item)
                 }
 
-                val barCodeState by viewModel.barCodeState.collectAsState()
+                if (barCodeActive != null && (barCodeActive ?: 0) > 0) {
+                    viewModel.setBarCode(null)
+                    readBarCode()
+                    viewModel.removeBarCode()
+                }
 
                 ToolbarAppBar(
-                    barCodeState
-                ) {
-                    viewModel.setBarCode(null)
-                    if (it) readBarCode()
-                }
+                    viewModel = viewModel
+                )
             }
         }
 
