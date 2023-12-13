@@ -14,6 +14,10 @@ interface ShoppingRepository {
     fun update(itemShopping: ItemShopping): Int
 
     fun navigationBadgeCount(title: String): Flow<Int?>
+
     fun checkProduct()
+
     suspend fun getProductInBarCode(barcode: String, company: Int = 2): StateProductBarCode
+
+    suspend fun getShoppingProductId(productId: Int): ItemShopping?
 }

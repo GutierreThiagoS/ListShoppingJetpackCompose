@@ -45,7 +45,7 @@ fun ProductsFireBase(
     viewModel: FireBaseViewModel = koinViewModel()
 ) {
 
-    val productList = viewModel.flowFireBaseStore.collectAsState()
+    val productList = viewModel.flowFireBaseStore.collectAsState(emptyList())
 
     val context = LocalContext.current
 
@@ -114,6 +114,7 @@ fun ProductsFireBase(
                                 Column(
                                     modifier = Modifier
                                     .padding(8.dp)
+                                    .weight(5f)
                                 ) {
                                     Text(text = product.description)
                                     Text(
@@ -129,7 +130,9 @@ fun ProductsFireBase(
                                     )
                                 }
 
-                                IconButton(onClick = {
+                                IconButton(
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
                                     viewModel.saveProductFireBase(product, context)
                                 }) {
                                     Icon(imageVector = Icons.Outlined.SaveAlt, contentDescription = "SaveAlt")

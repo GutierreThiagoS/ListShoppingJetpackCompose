@@ -45,7 +45,8 @@ val repositoryModule = module {
     single {
         FireStoreRepositoryImp(
             productDao = get(),
-            categoryDao = get()
+            categoryDao = get(),
+            fireBaseDao = get()
         )
     } bind FireStoreRepository::class
 }

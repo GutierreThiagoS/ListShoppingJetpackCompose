@@ -8,4 +8,5 @@ val daoModule = module {
     single { get<AppDataBase>().getItemShoppingDao() }
     single { get<AppDataBase>().getProductDao() }
     single { get<AppDataBase>().getToDoDao() }
+    single { get<AppDataBase>().getProductFireBaseDao() }
 }

@@ -6,10 +6,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.gutierre.mylists.domain.model.ProductOnItemShopping
 import com.gutierre.mylists.framework.composable.CategoryInProductsLayout
+import com.gutierre.mylists.framework.ui.main.MainViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ProductsFrag(
+    mainViewModel: MainViewModel,
     viewModel: ProductViewModel = koinViewModel(),
     editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
@@ -17,6 +19,7 @@ fun ProductsFrag(
     
     if (productListState.isNotEmpty()) {
         CategoryInProductsLayout(
+            mainViewModel = mainViewModel,
             products = productListState,
             editProductClick = editProductClick
         )

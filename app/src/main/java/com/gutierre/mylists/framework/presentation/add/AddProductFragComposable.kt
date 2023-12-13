@@ -99,12 +99,10 @@ fun AddProductFrag(
     var textPrice by remember { mutableStateOf("") }
 
     barcode?.let {
-        logE("BarCoezzzz  $it")
         textBarCode = it
     }
 
     productState?.let {
-        logE("BarCoezzzz  $it")
         textDescription = it.description
         textBrand = it.brandProduct
         textBarCode = it.ean

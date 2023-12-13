@@ -1,7 +1,8 @@
 package com.gutierre.mylists.di
 
-import androidx.room.migration.Migration
+/*import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -43,4 +44,4 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(" AlTER TABLE Product ADD categoryName Text NOT NULL DEFAULT ''")
     }
-}
+}*/

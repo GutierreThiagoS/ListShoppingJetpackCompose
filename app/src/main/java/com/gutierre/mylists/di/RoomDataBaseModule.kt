@@ -8,7 +8,7 @@ import org.koin.dsl.module
 val roomDatabaseModule = module {
     single {
         Room.databaseBuilder(get(), AppDataBase::class.java, "database-lista-de-compras")
-            .addMigrations(
+            /*.addMigrations(
                 *arrayOf(
                     MIGRATION_1_2,
                     MIGRATION_2_3,
@@ -16,7 +16,8 @@ val roomDatabaseModule = module {
                     MIGRATION_4_5,
                     MIGRATION_5_6
                 )
-            )
+            )*/
+            .fallbackToDestructiveMigration()
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .build()
     }

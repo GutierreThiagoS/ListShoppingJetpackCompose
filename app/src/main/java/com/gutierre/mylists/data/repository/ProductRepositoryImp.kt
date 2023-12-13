@@ -37,7 +37,7 @@ class ProductRepositoryImp(
 
     override fun insertShopping(shopping: ItemShopping): ItemShopping? {
 
-        if (shopping.quantity <= -1) {
+        if (shopping.quantity  < 0) {
             val itemDelete = itemShoppingDao.consultItemShopping(shopping.idProductFK)
             if (itemDelete != null) {
                 itemShoppingDao.delete(itemDelete)

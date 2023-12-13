@@ -8,6 +8,7 @@ import com.gutierre.mylists.domain.repository.FireStoreRepository
 import com.gutierre.mylists.domain.repository.ProductRepository
 import com.gutierre.mylists.framework.utils.coroutineExceptionHandler
 import com.gutierre.mylists.framework.utils.logE
+import com.gutierre.mylists.framework.utils.notNull
 import com.gutierre.mylists.state.StateInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
@@ -45,10 +46,15 @@ class ProductViewModel(
 
             logE("productOnItemShopping $productOnItemShopping")
 
+            val productFireBase = repositoryFireBase.getProductFireBaseInRoom(product?.description.notNull())
+
             withContext(Dispatchers.Main) {
-                if (product != null) {
-                    repositoryFireBase.getProductsFirebaseStore(
-                        product,
+                if (product != null && productFireBase == null) {
+                    repositoryFireBase.saveProductFirebaseStore(product) {
+                        state(it)
+                    }
+                    /*repositoryFireBase.getProductsFirebaseStore(
+                        product = product,
                         result = {
                             repositoryFireBase.saveProductFirebaseStore(product) {
                                 state(it)
@@ -57,8 +63,8 @@ class ProductViewModel(
                         error = {
                             state(StateInfo.Error(it.message ?: "Erro no Produto!", it))
                         }
-                    )
-                } else state(StateInfo.Error("Erro Produto não encontrado"))
+                    )*/
+                } else state(StateInfo.Error(if (productFireBase != null) "Existe produto com a mesma descrição na Nuvem" else "Erro Produto não encontrado"))
             }
         }
 

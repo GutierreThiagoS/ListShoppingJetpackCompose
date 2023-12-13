@@ -1,6 +1,11 @@
 package com.gutierre.mylists.framework.composable
 
+import android.app.Activity
+import android.app.AlertDialog
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -49,6 +55,7 @@ import com.gutierre.mylists.framework.ui.theme.Navy
 import com.gutierre.mylists.framework.ui.theme.Teal30
 import com.gutierre.mylists.framework.ui.theme.TealBlack700
 import com.gutierre.mylists.framework.ui.theme.VeryLightGray
+import com.gutierre.mylists.framework.utils.logE
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,6 +97,8 @@ fun BottomMenu(
                             onClick = {
                                 mainViewModel.setNavigation(item.title, index)
                                 navController.navigate(item.title)
+                                mainViewModel.setTextSearch()
+                                mainViewModel.setStatusSearch()
                             },
                             label = {
                                 Text(text = item.title)
@@ -209,32 +218,86 @@ fun NavHostApp(
     returnDest: (destination: String) -> Unit,
     editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
-    NavHost(navController, startDestination = NavigationScreen.SHOPPING.label) {
+    val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+    NavHost(
+        navController = navController,
+        startDestination = NavigationScreen.SHOPPING.label,
+    ) {
         composable(NavigationScreen.SHOPPING.label) {
-            ShoppingFrag(editProductClick = editProductClick)
+            ShoppingFrag(
+                mainViewModel = mainViewModel,
+                editProductClick = editProductClick
+            )
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel, LocalContext.current as Activity)
         }
         composable(NavigationScreen.PRODUCTS.label) {
-            ProductsFrag(editProductClick = editProductClick)
+            ProductsFrag(
+                mainViewModel = mainViewModel,
+                editProductClick = editProductClick
+            )
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel)
         }
         composable(NavigationScreen.TO_DO.label) {
             ToDoListFrag(
                 navController = navController,
                 mainViewModel = mainViewModel
             )
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel)
         }
         composable(NavigationScreen.ADD_PRODUCT.label) {
             AddProductFrag(
                 mainViewModel = mainViewModel,
                 returnDest = returnDest
             )
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel)
         }
         composable(NavigationScreen.ADD_TO_DO.label) {
-            AddToDoList(
-                mainViewModel = mainViewModel,
-            )
+            AddToDoList(mainViewModel = mainViewModel)
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel)
         }
         composable(NavigationScreen.SETTINGS.label) {
             ConfigurationFrag()
+            setNavigationHandlerOnBackPressed(backPressedDispatcher, navController, mainViewModel)
         }
     }
+}
+
+fun setNavigationHandlerOnBackPressed(
+    backPressedDispatcher: OnBackPressedDispatcher?,
+    navController: NavHostController,
+    mainViewModel: MainViewModel,
+    isShopping: Activity? = null
+) {
+    backPressedDispatcher?.addCallback(object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            logE("handleOnBackPressed ${navController.currentDestination}")
+            navController.popBackStack()
+            mainViewModel.setTextSearch()
+            mainViewModel.setStatusSearch()
+            navController.currentDestination?.route.let {
+                when {
+                    (isShopping != null && it.isNullOrBlank()) -> {
+                        AlertDialog.Builder(isShopping).apply {
+                            setTitle("Atenção")
+                            setMessage("Deseja sair do App")
+                            setPositiveButton("Sim") { d, _ ->
+                                d.dismiss()
+                                isShopping.finish()
+                            }
+                            setNegativeButton("Não") { d, _ ->
+                                d.dismiss()
+                            }
+                            show()
+                        }
+                    }
+                    it.isNullOrBlank() -> {
+                        mainViewModel.setNavigation(NavigationScreen.SHOPPING.label)
+                        navController.navigate(NavigationScreen.SHOPPING.label)
+                    }
+                    else ->  mainViewModel.setNavigation(it)
+                }
+            }
+        }
+    })
 }

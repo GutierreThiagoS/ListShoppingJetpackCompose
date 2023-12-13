@@ -153,6 +153,10 @@ class ShoppingRepositoryImp(
         }
     }
 
+    override suspend fun getShoppingProductId(productId: Int): ItemShopping? {
+        return itemShoppingDao.consultItemShopping(productId)
+    }
+
     private val products = listOf(
             Product(
                 description = "Arroz 1kg",

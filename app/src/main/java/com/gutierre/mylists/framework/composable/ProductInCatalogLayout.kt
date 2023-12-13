@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,22 +47,31 @@ import androidx.compose.ui.unit.dp
 import com.gutierre.mylists.domain.model.Category
 import com.gutierre.mylists.domain.model.ProductOnItemShopping
 import com.gutierre.mylists.framework.presentation.products.ProductViewModel
+import com.gutierre.mylists.framework.ui.main.MainViewModel
 import com.gutierre.mylists.framework.ui.theme.Bordor
 import com.gutierre.mylists.framework.ui.theme.Gray
 import com.gutierre.mylists.framework.ui.theme.LightGray
 import com.gutierre.mylists.framework.ui.theme.Teal700
+import com.gutierre.mylists.framework.utils.notNull
 import com.gutierre.mylists.state.StateInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CategoryInProductsLayout(
+    mainViewModel: MainViewModel,
     products: List<ProductOnItemShopping>,
-    isVisibleCheck : Boolean = false,
+    isShopping : Boolean = false,
     editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
-    val categories = products.map { Category(it.idCategory, it.nameCategory) }
+    val textSearch by mainViewModel.textSearch.collectAsState()
+
+    val categories = products
+        .filter { textSearch.isNullOrBlank() || it.description.contains(textSearch.notNull(), ignoreCase = true) }
+        .map { Category(it.idCategory, it.nameCategory) }
         .sortedBy { it.nameCategory }
         .distinct()
 
@@ -102,9 +112,8 @@ fun CategoryInProductsLayout(
                         }
                     }
 
-
                     val productsInCategory =
-                        products.filter { it.nameCategory == category.nameCategory }
+                        products.filter { it.nameCategory == category.nameCategory && (textSearch.isNullOrBlank() || it.description.contains(textSearch.notNull(), ignoreCase = true)) }
 
                     var offsetX by remember { mutableFloatStateOf(0f) }
 
@@ -115,7 +124,7 @@ fun CategoryInProductsLayout(
                                 offsetXGlobal = offsetX,
                                 setOffsetXGlobal = { o, _ -> offsetX = o },
                                 index = index,
-                                isVisibleCheck = isVisibleCheck,
+                                isShopping = isShopping,
                                 editProductClick = editProductClick
                             )
                         }
@@ -132,7 +141,7 @@ fun ShoppingProductListItem(
     index: Int,
     offsetXGlobal: Float,
     setOffsetXGlobal: (value: Float, index: Int) -> Unit,
-    isVisibleCheck: Boolean = false,
+    isShopping: Boolean = false,
     viewModel: ProductViewModel = koinViewModel(),
     editProductClick: (product: ProductOnItemShopping) -> Unit
 ) {
@@ -140,6 +149,7 @@ fun ShoppingProductListItem(
     var offsetX by remember { mutableFloatStateOf(offsetXGlobal) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    var job: Job? = null
 
     if (index != 0 ) LineDivided()
     Box(
@@ -173,7 +183,7 @@ fun ShoppingProductListItem(
                             is StateInfo.Success -> Toast.makeText(context, it.info, Toast.LENGTH_SHORT).show()
                             is StateInfo.Error -> AlertDialog.Builder(context).apply {
                                 setTitle(it.info)
-                                setMessage(it.exception.toString())
+                                if (it.exception != null) setMessage(it.exception.toString())
                                 setNeutralButton("OK") { d, _ ->
                                     d.dismiss()
                                 }
@@ -184,7 +194,6 @@ fun ShoppingProductListItem(
                 }) {
                     Icon(
                         imageVector = Icons.Outlined.CloudUpload,
-//                        painter = painterResource(id = R.drawable.icon_database_vector),
                         contentDescription = "DataBase",
                         tint = Color.White
                     )
@@ -205,7 +214,8 @@ fun ShoppingProductListItem(
                     detectHorizontalDragGestures { _, dragAmount ->
                         offsetX += dragAmount
                         val offset = offsetX
-                        coroutineScope.launch {
+                        job?.cancel()
+                        job = coroutineScope.launch(Dispatchers.Main) {
                             delay(5000)
                             if (offset == offsetX) {
                                 offsetX = 0f
@@ -216,14 +226,15 @@ fun ShoppingProductListItem(
                             offsetX > 400 -> offsetX = 400f
                             else -> {
                                 val offsetXLocal = offsetX
-                                coroutineScope.launch {
+                                coroutineScope.launch(Dispatchers.Main) {
                                     delay(500)
-                                    offsetX = if (offsetX < 400 && offsetX > -200 && offsetXLocal == offsetX) {
-                                        0f
-                                    } else {
-                                        delay(5000)
-                                        0f
-                                    }
+                                    offsetX =
+                                        if (offsetX < 400 && offsetX > -200 && offsetXLocal == offsetX) {
+                                            0f
+                                        } else {
+                                            delay(5000)
+                                            0f
+                                        }
                                 }
                             }
                         }
@@ -236,7 +247,7 @@ fun ShoppingProductListItem(
             ) {
                 ActionButtonAmountTextField(
                     product = product,
-                    isVisibleCheck = isVisibleCheck
+                    isShopping = isShopping
                 )
             }
         }

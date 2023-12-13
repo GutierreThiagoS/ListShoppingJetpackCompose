@@ -28,7 +28,8 @@ val viewModelModule = module {
     viewModel {
         AddNewProductViewModel(
             repository = get(),
-            repositoryCategory = get()
+            repositoryCategory = get(),
+            shoppingRepository = get()
         )
     }
 

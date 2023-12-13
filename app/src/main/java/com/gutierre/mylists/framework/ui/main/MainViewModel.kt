@@ -54,6 +54,12 @@ class MainViewModel(
 
     val toDoNotifications = toDoRepository.getToDoListFlowNotifications()
 
+    private val _textSearch = MutableStateFlow<String?>(null)
+    val textSearch : StateFlow<String?> = _textSearch
+
+    private val _isSearch = MutableStateFlow(false)
+    val isSearch : StateFlow<Boolean> = _isSearch
+
     fun read(id: Int) {
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler("read notification")) {
             toDoRepository.read(id)
@@ -147,5 +153,13 @@ class MainViewModel(
         viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler("refreshNotification")) {
             toDoRepository.refreshNotification()
         }
+    }
+
+    fun setTextSearch(value: String? = null) {
+        _textSearch.value = value
+    }
+
+    fun setStatusSearch(value: Boolean = false) {
+        _isSearch.value = value
     }
 }

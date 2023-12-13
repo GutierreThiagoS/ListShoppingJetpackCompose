@@ -39,23 +39,12 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ActionButtonAmountTextField(
     product: ProductOnItemShopping,
-    isVisibleCheck : Boolean = false,
+    isShopping : Boolean = false,
     viewModel: ProductViewModel = koinViewModel()
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        /*if (isVisibleCheck) {
-            var checkedState by remember { mutableStateOf(product.selected) }
-            Checkbox(
-                checked = checkedState,
-                onCheckedChange = {
-                    checkedState = it
-                    product.selected = it
-                    viewModel.insertProductInShoppingList(product = product)
-                }
-            )
-        }*/
 
         Column(
             modifier = Modifier
@@ -84,8 +73,9 @@ fun ActionButtonAmountTextField(
 
         var text by rememberSaveable { mutableStateOf("${product.quantity}") }
 
-        FloatingActionButtonItem(if (isVisibleCheck && product.quantity <= 0) Icons.Outlined.Delete else Icons.Outlined.Remove) {
-            if (product.quantity > 0) {
+        FloatingActionButtonItem(if (isShopping && product.quantity <= 0) Icons.Outlined.Delete else Icons.Outlined.Remove) {
+            if (product.quantity > -1
+                ) {
                 product.quantity--
                 text = product.quantity.toString()
                 viewModel.insertProductInShoppingList(product = product)

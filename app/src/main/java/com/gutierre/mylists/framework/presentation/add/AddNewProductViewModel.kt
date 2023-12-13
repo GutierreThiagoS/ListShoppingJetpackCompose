@@ -8,12 +8,14 @@ import com.gutierre.mylists.domain.model.ItemShopping
 import com.gutierre.mylists.domain.model.Product
 import com.gutierre.mylists.domain.repository.CategoryRepository
 import com.gutierre.mylists.domain.repository.ProductRepository
+import com.gutierre.mylists.domain.repository.ShoppingRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 
 class AddNewProductViewModel(
     private val repository: ProductRepository,
-    private val repositoryCategory: CategoryRepository
+    private val repositoryCategory: CategoryRepository,
+    private val shoppingRepository: ShoppingRepository
 ): ViewModel() {
 
     val categoryList: Flow<List<Category>> = repositoryCategory.consultCategoryList()
@@ -37,8 +39,10 @@ class AddNewProductViewModel(
     private fun insertProductInShopping(product: Product, quantity: String, returnInsert: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, _ ->  }) {
             val productDB = repository.getProduct(product.description)
+            val shopping = shoppingRepository.getShoppingProductId(productDB?.idProduct ?: 0)
             repository.insertShopping(
                 shopping = ItemShopping(
+                    idItem = shopping?.idItem ?: 0,
                     idProductFK = productDB?.idProduct ?: product.idProduct,
                     quantity = quantity.toIntOrNull() ?: 1,
                     selected = false

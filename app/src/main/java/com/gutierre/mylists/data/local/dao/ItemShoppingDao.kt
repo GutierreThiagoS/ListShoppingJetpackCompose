@@ -59,7 +59,7 @@ interface ItemShoppingDao {
         SELECT SUM(P.price * S.quantity)
         FROM ItemShopping S INNER JOIN Product P 
         ON S.idProductFK = P.idProduct INNER JOIN Category C
-        ON P.idCategoryFK = C.idCategory WHERE selected == 1
+        ON P.idCategoryFK = C.idCategory
     """)
     fun getTotalProductOnItemShopping(): Flow<Float?>
 }

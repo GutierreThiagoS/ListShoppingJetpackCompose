@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private val barcodeLauncher = this.registerForActivityResult( ScanContract() ) { result: ScanIntentResult ->
         if (result.contents != null) {
             val barcode = result.contents.toString()
-            Log.e("CodeBAr", "$barcode ")
+            logE("CodeBAr $barcode")
             if (barcode.isNotBlank()) {
                 viewModel.setBarCode(barcode)
             }
@@ -105,12 +106,9 @@ class MainActivity : AppCompatActivity() {
                     viewModel.removeBarCode()
                 }
 
-                ToolbarAppBar(
-                    viewModel = viewModel
-                )
+                ToolbarAppBar(viewModel = viewModel)
             }
         }
-
     }
 
     private fun getAlertManager(item: ToDoItem) {
@@ -202,6 +200,11 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Precisa da permissão de Notificação", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun getOnBackInvokedDispatcher(): OnBackInvokedDispatcher {
+        logE("Testando Testando")
+        return super.getOnBackInvokedDispatcher()
     }
 
 }
